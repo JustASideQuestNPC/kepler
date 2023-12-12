@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "target": "ES6"
+  },
+  "include": [
+    "node_modules/@types/p5/**/*",
+    "./"
+  ]
+}
