@@ -4,6 +4,15 @@
  */
 let input;
 
+/**
+ * Global game engine.
+ * @type {KEngine}
+ */
+let engine;
+
+/** @type {DemoEntity} */
+let testEntity;
+
 /** @type {number} */
 let timesClicked = 0;
 
@@ -15,40 +24,12 @@ function setup() {
   createCanvas(600, 600);
 
   input = KInput.makeNew(window);
-  input.addAction({
-    name: "spacebar continuous",
-    keys: Key.SPACE
-  });
-  input.addAction({
-    name: "spacebar press",
-    keys: Key.SPACE,
-    mode: "press"
-  });
-  input.addAction({
-    name: "spacebar release",
-    keys: Key.SPACE,
-    mode: "release"
-  });
-  input.addAction({
-    name: "multiple buttons",
-    keys: [Key.SHIFT, Key.LEFT_MOUSE],
-  });
-  input.addAction({
-    name: "chord action",
-    keys: [Key.A, Key.S, Key.D],
-    chord: true
-  });
-  input.addAction({
-    name: "callback counter",
-    keys: Key.ENTER,
-    mode: "press",
-    callback: () => {
-      ++timesClicked;
-    }
-  });
+
+  engine = new KEngine(window);
+  testEntity = engine.addEntity(new DemoEntity(width / 2, height / 2));
 
   textSize(18);
-  textAlign(CENTER, CENTER);
+  textAlign(LEFT, TOP);
 }
 
 
@@ -57,37 +38,12 @@ function setup() {
  * @function
  */
 function draw() {
-  // update input handler
-  input.updateAll();
+  // update input handler and engine
+  input.update();
+  engine.update();
 
   background(255);
-  noStroke();
-
-  setFillColor("spacebar continuous");  
-  ellipse(100, 100, 150, 150);
-
-  setFillColor("spacebar press");
-  ellipse(300, 100, 150, 150);
-
-  setFillColor("spacebar release");
-  ellipse(500, 100, 150, 150);
-
-  setFillColor("multiple buttons");
-  ellipse(100, 300, 150, 150);
-
-  setFillColor("chord action");
-  ellipse(300, 300, 150, 150);
-
-  setFillColor("callback counter");
-  ellipse(500, 300, 150, 150);
-
-  fill(0);
-  text("Spacebar\n(continuous)", 100, 100);
-  text("Spacebar\n(press)", 300, 100);
-  text("Spacebar\n(release)", 500, 100);
-  text("Shift or\nLeft Mouse", 100, 300);
-  text("A + S + D", 300, 300);
-  text(`Enter\nTimes Pressed:\n${timesClicked}`, 500, 300);
+  engine.render();
 }
 
 
@@ -100,4 +56,59 @@ function draw() {
 function setFillColor(name) {
   if (input.isActive(name)) fill(64, 237, 64);
   else fill(250, 50, 50);
+}
+
+/**
+ * A very basic custom entity.
+ */
+class DemoEntity extends KEntity {
+  /** @type {string[]} */
+  tags = ["demo"];
+
+  /** @type {p5.Vector} */
+  position;
+
+  /** @type {p5.Vector} */
+  velocity;
+
+  /**
+   * Constructs a new DemoEntity.
+   * @constructor
+   * @param {number} x The entity's starting X coordinate.
+   * @param {number} y The entity's starting Y coordinate.
+   */
+  constructor(x, y) {
+    super();
+    this.position = new p5.Vector(x, y);
+    this.velocity = p5.Vector.random2D();
+    this.velocity.mult(450);
+  }
+
+  /**
+   * Updates the entity.
+   * @method
+   * @override
+   * @param {number} dt The time between the previous 2 updates, in seconds.
+   */
+  update(dt) {
+    let moveStep = p5.Vector.mult(this.velocity, dt);
+    this.position.add(moveStep);
+
+    if (this.position.x < 0 || this.position.x > width ||
+        this.position.y < 0 || this.position.y > height) {
+      this.engine.addEntity(new DemoEntity(width / 2, height / 2));
+      this.markForDelete = true;
+    }
+  }
+
+  /**
+   * Renders the entity to the canvas.
+   * @method
+   * @override
+   */
+  render() {
+    noStroke();
+    fill(255, 0, 0);
+    ellipse(this.position.x, this.position.y, 70, 70);
+  }
 }
