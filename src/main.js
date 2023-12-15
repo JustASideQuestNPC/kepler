@@ -13,9 +13,6 @@ let engine;
 /** @type {DemoEntity} */
 let testEntity;
 
-/** @type {number} */
-let timesClicked = 0;
-
 /**
  * Automatically runs once when the webpage is loaded.
  * @function
@@ -24,6 +21,22 @@ function setup() {
   createCanvas(600, 600);
 
   input = KInput.makeNew(window);
+  input.addAction({
+    name: "move up",
+    keys: [Key.W, Key.UP]
+  });
+  input.addAction({
+    name: "move down",
+    keys: [Key.S, Key.DOWN]
+  });
+  input.addAction({
+    name: "move left",
+    keys: [Key.A, Key.LEFT]
+  });
+  input.addAction({
+    name: "move right",
+    keys: [Key.D, Key.RIGHT]
+  });
 
   engine = new KEngine(window);
   testEntity = engine.addEntity(new DemoEntity(width / 2, height / 2));
@@ -68,8 +81,8 @@ class DemoEntity extends KEntity {
   /** @type {p5.Vector} */
   position;
 
-  /** @type {p5.Vector} */
-  velocity;
+  /** @type {number} */
+  moveSpeed = 300;
 
   /**
    * Constructs a new DemoEntity.
@@ -80,8 +93,6 @@ class DemoEntity extends KEntity {
   constructor(x, y) {
     super();
     this.position = new p5.Vector(x, y);
-    this.velocity = p5.Vector.random2D();
-    this.velocity.mult(450);
   }
 
   /**
@@ -91,9 +102,23 @@ class DemoEntity extends KEntity {
    * @param {number} dt The time between the previous 2 updates, in seconds.
    */
   update(dt) {
-    let moveStep = p5.Vector.mult(this.velocity, dt);
+    // determine movement
+    let moveStep = new p5.Vector();
+    if (input.isActive("move up"))    --moveStep.y;
+    if (input.isActive("move down"))  ++moveStep.y;
+    if (input.isActive("move left"))  --moveStep.x;
+    if (input.isActive("move right")) ++moveStep.x;
+
+    // scale movement to speed
+    moveStep.normalize();
+    moveStep.mult(this.moveSpeed);
+
+    // scale movement to delta time and move the entity
+    moveStep.mult(dt);
     this.position.add(moveStep);
 
+
+    // delete if offscreen
     if (this.position.x < 0 || this.position.x > width ||
         this.position.y < 0 || this.position.y > height) {
       this.engine.addEntity(new DemoEntity(width / 2, height / 2));
