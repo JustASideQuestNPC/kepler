@@ -67,8 +67,8 @@ function draw() {
  * @param {string} name - The name of the input action.
  */
 function setFillColor(name) {
-  if (input.isActive(name)) fill(64, 237, 64);
-  else fill(250, 50, 50);
+  if (input.isActive(name)) fill("#59fa4b");
+  else fill("#f74639");
 }
 
 /**
