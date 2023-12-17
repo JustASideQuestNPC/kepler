@@ -37,6 +37,10 @@ function setup() {
     name: "move right",
     keys: [Key.D, Key.RIGHT]
   });
+  input.addAction({
+    name: "slow time",
+    keys: [Key.SPACEBAR]
+  });
 
   engine = new KEngine(window);
   testEntity = engine.addEntity(new DemoEntity(width / 2, height / 2));
@@ -51,25 +55,21 @@ function setup() {
  * @function
  */
 function draw() {
-  // update input handler and engine
   input.update();
+  
+  if (input.isActive("slow time")) engine.deltaTimeMultiplier = 0.5;
+  else engine.deltaTimeMultiplier = 1;
+
   engine.update();
 
-  background(255);
+  background("#ffffff");
   engine.render();
+
+  fill("#000000");
+  text(`Scaled DT: ${engine.deltaTime}s\nTrue DT: ${engine.deltaTimeRaw}s`,
+      3, 3);
 }
 
-
-/**
- * Sets the fill color to green if the named input action is active, and red if
- * it is inactive.
- * @function
- * @param {string} name - The name of the input action.
- */
-function setFillColor(name) {
-  if (input.isActive(name)) fill("#59fa4b");
-  else fill("#f74639");
-}
 
 /**
  * A very basic custom entity.
@@ -133,7 +133,7 @@ class DemoEntity extends KEntity {
    */
   render() {
     noStroke();
-    fill(255, 0, 0);
+    fill("#ff3b21");
     ellipse(this.position.x, this.position.y, 70, 70);
   }
 }

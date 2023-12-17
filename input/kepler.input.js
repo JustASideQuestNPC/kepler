@@ -120,6 +120,8 @@ const Key = {
 class KInput {
   // used to make the constructor "private" and force the use of KInput.makeNew
   static #CONSTRUCTOR_KEY = Symbol();
+  static #VALID_KEY_CODES = Object.values(Key);
+  
 
   /**
    * Holds whether each keyboard or mouse key is currently pressed.
@@ -195,7 +197,7 @@ class KInput {
       if (f12HotkeyEnabled) {
         sketch.keyPressed = () => {
           obj.pressKey(sketch.keyCode);
-          return sketch.keyCode !== Key.F12;
+          if (sketch.keyCode !== Key.F12) return false;
         }
       }
       else {
@@ -235,7 +237,7 @@ class KInput {
         '"KInput.makeNew" instead!');
 
     // populate #keyStates with default values for each key
-    for (let k of KInput.VALID_KEY_CODES) {
+    for (let k of KInput.#VALID_KEY_CODES) {
       this.#keyStates[k] = false;
     }
   }
@@ -279,7 +281,7 @@ class KInput {
       throw new TypeError(`The input action ${name} requires an array of ` +
           `keys (even if only a single key is bound to it)!`);
     }
-    if (keys.some((k) => !KInput.VALID_KEY_CODES.includes(k))) {
+    if (keys.some((k) => !KInput.#VALID_KEY_CODES.includes(k))) {
       throw new TypeError(`The input action "${name}" has invalid keys!`);
     }
 
@@ -402,7 +404,7 @@ class KInput {
    * @param {Key} code The key or mouse button to check the state of.
    */
   getKeyState(code) {
-    if (!KInput.VALID_KEY_CODES.includes(code)) {
+    if (!KInput.#VALID_KEY_CODES.includes(code)) {
       throw new Error(`"${code}" is not a valid key or mouse button!`);
     }
     return this.#keyStates[code];

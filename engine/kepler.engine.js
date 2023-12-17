@@ -1,5 +1,9 @@
-/** @typedef {number} float - A floating-point number. */
-/** @typedef {number} int - An integer number. */
+/** @typedef {number} float A floating-point number. */
+/** @typedef {number} int An integer number. */
+
+// reserved entity tags - these are symbols to prevent a user-defined tag from
+// accidentally having the same value
+const USE_RAW_DELTA_TIME = Symbol();
 
 /**
  * Primary game engine class that manages rendering and updates for all entities
@@ -29,8 +33,17 @@ class KEngine {
    * The time between the last 2 updates, in seconds.
    * @type {float}
    */
-  get deltaTime() {
+  get deltaTimeRaw() {
     return this.#sketch.deltaTime / 1000;
+  }
+
+  /**
+   * The time between the last 2 updates, in seconds, multiplied by the current
+   * delta time multiplier.
+   * @type {float}
+   */
+  get deltaTime() {
+    return this.#sketch.deltaTime / 1000 * this.deltaTimeMultiplier;
   }
 
   /**
@@ -40,6 +53,17 @@ class KEngine {
   get numEntities() {
     return this.#entities.length;
   }
+
+  /**
+   * The current delta time multiplier or "speed of time". When entities are
+   * updated, their update method is passed the current delta time multiplied
+   * by this unless the entity has the USE_RAW_DELTA_TIME tag. A multiplier of 1
+   * (the default) keeps the same speed, a multiplier > 1 increases speed, and 
+   * a multiplier < 1 lowers speed. Multipliers <= 0 create undefined behavior
+   * (in other words, it's probably bad but I don't feel like testing it)!
+   * @type {float}
+   */
+  deltaTimeMultiplier = 1;
 
   /**
    * Adds an entity to the engine.
@@ -64,8 +88,15 @@ class KEngine {
    * @method
    */
   update() {
+    // save the multiplied delta time to prevent any weirdness if something
+    // changes the multiplier midway through the update cycle
+    let dt = this.deltaTime;
+
     for (let e of this.#entities) {
-      if (!e.disableUpdate) e.update(this.deltaTime);
+      if (!e.disableUpdate && !e.markForDelete) {
+        if (e.hasTag(USE_RAW_DELTA_TIME)) e.update(this.deltaTimeRaw);
+        else e.update(dt);
+      }
     }
 
     // remove deleted entities
@@ -80,6 +111,56 @@ class KEngine {
     for (let e of this.#entities) {
       if (!e.disableRender) e.render();
     }
+  }
+
+  /**
+   * Deletes all entities that a predicate function returns `true` for.
+   * @method
+   * @param {function(Entity): boolean} predicate A predicate function that
+   *    takes an entity as a parameter, and returns a boolean based on whether
+   *    the entity should be deleted.
+   */
+  removeIf(predicate) {
+    this.#entities = this.#entities.filter((e) => predicate(e));
+  }
+
+  /**
+   * Deletes all entities that have the specified tag.
+   * @method
+   * @param {any} tag
+   */
+  removeTagged(tag) {
+    this.removeIf((e) => e.hasTag(tag));
+  }
+
+  /**
+   * Deletes all entities.
+   * @method
+   */
+  clearEntityList() {
+    this.#entities = [];
+  }
+
+  /**
+   * Returns a list containing all entities that a predicate function returns
+   * `true` for.
+   * @method
+   * @param {function(Entity): boolean} predicate A predicate function that
+   *    takes an entity as a parameter, and returns a boolean based on whether
+   *    the entity should be included in the list.
+   * @returns {Entity[]}
+   */
+  getIf(predicate) {
+    return this.#entities.filter((e) => predicate(e));
+  }
+
+  /**
+   * Returns a list containing all entities with the specified tag.
+   * @param {any} tag 
+   * @returns {Entity[]}
+   */
+  getTagged(tag) {
+    return this.getIf((e) => e.hasTag(tag));
   }
 
   /**
@@ -106,9 +187,12 @@ class KEntity {
    * tags or none at all, but it's a good idea to at least give them a tag
    * indicating what they are. 
    * 
-   * Tags can be whatever you want and you don't have to define them anywhere,
-   * but there are a few that are reserved by Kepler and have special behavior:
-   * @type {string[]}
+   * Tags can be whatever you want (strings are typically easiest, but the
+   * built-in ones are Symbols), but there are a few built-in tags with reserved
+   * names:
+   * - Entities with the `USE_RAW_DELTA_TIME` tag will have the "true" delta
+   *   time passed to their `update` method, regardless of multiplier.
+   * @type {any[]}
    */
   tags = [];
 
@@ -162,6 +246,16 @@ class KEntity {
    * @method
    */
   render() {}
+
+  /**
+   * Returns whether the entity has the specified tag.
+   * @method
+   * @param {any} tag The tag to check for.
+   * @returns {boolean}
+   */
+  hasTag(tag) {
+    return this.tags.includes(tag);
+  }
 
   // abstract classes that can't be instantiantiated and must be extended don't
   // exist because this is javascript...but this is javascript, so we can just
