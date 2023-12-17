@@ -13,12 +13,15 @@ let engine;
 /** @type {DemoEntity} */
 let testEntity;
 
+/** @type {p5.Graphics} */
+let pg;
+
 /**
  * Automatically runs once when the webpage is loaded.
  * @function
  */
 function setup() {
-  createCanvas(600, 600);
+  createCanvas(400, 600);
 
   input = KInput.makeNew(window);
   input.addAction({
@@ -131,9 +134,9 @@ class DemoEntity extends KEntity {
    * @method
    * @override
    */
-  render() {
-    noStroke();
-    fill("#ff3b21");
-    ellipse(this.position.x, this.position.y, 70, 70);
+  render(rt) {
+    rt.noStroke();
+    rt.fill("#ff3b21");
+    rt.ellipse(this.position.x, this.position.y, 70, 70);
   }
 }

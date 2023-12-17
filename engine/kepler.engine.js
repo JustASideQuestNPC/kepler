@@ -17,6 +17,11 @@ class KEngine {
    */
 
   /**
+   * Any object that the p5 drawing API can be used with.
+   * @typedef {(Window | p5 | p5.Graphics | p5.Framebuffer)} Renderable
+   */
+
+  /**
    * All entities that are currently being managed by the engine.
    * @type {Entity[]}
    */
@@ -28,6 +33,14 @@ class KEngine {
    * @type {Window | p5}
    */
   #sketch;
+
+  /**
+   * Where entities are rendered to when the engine's `render` method is called.
+   * Note: This only affects what is passed to each entity's `render` method, so
+   * it will have no effect unless the entity draws to it.
+   * @type {!Renderable}
+   */
+  renderTarget;
 
   /**
    * The time between the last 2 updates, in seconds.
@@ -109,7 +122,7 @@ class KEngine {
    */
   render() {
     for (let e of this.#entities) {
-      if (!e.disableRender) e.render();
+      if (!e.disableRender) e.render(this.renderTarget);
     }
   }
 
@@ -166,13 +179,14 @@ class KEngine {
   /**
    * Creates a new KEngine.
    * @constructor
-   * @param {Window | p5} sketch - The sketch instance to define input listeners
-   *    for. If you're running your code in **global mode**, this should be
-   *    `window`. If you're running your code in **instance mode**, this should
-   *    be the same object you're defining `setup` and `draw` for.
+   * @param {Window | p5} sketch The sketch instance to define input listeners
+   *    for. If you're running your code in global mode, this should be
+   *    `window`. If you're running your code in instance mode, this should be
+   *    the same object you're defining `setup` and `draw` for.
    */
   constructor(sketch) {
     this.#sketch = sketch;
+    this.renderTarget = sketch;
   }
 }
 
@@ -244,8 +258,11 @@ class KEntity {
    * Renders the entity, called by `KEngine.render()`. Only does something if
    * you override it in your entity class.
    * @method
+   * @param {Renderable} rt The sketch/graphics/etc. that the engine is
+   *    is currently rendering (or attempting to render) everything to. If you
+   *    only plan on drawing directly to the main sketch, you can ignore this.
    */
-  render() {}
+  render(rt) {}
 
   /**
    * Returns whether the entity has the specified tag.
