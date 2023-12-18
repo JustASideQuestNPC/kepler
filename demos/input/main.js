@@ -20,12 +20,12 @@ function setup() {
   input.addAction({
     name: "spacebar press",
     keys: [Key.SPACE],
-    mode: "press"
+    mode: PRESS
   });
   input.addAction({
     name: "spacebar release",
     keys: [Key.SPACE],
-    mode: "release"
+    mode: RELEASE
   });
   input.addAction({
     name: "multiple keys",
@@ -39,7 +39,7 @@ function setup() {
   input.addAction({
     name: "callback counter",
     keys: [Key.ENTER],
-    mode: "press",
+    mode: PRESS,
     callback: () => {
       ++counter;
     }

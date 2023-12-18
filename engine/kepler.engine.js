@@ -1,6 +1,3 @@
-/** @typedef {number} float A floating-point number. */
-/** @typedef {number} int An integer number. */
-
 // reserved entity tags - these are symbols to prevent a user-defined tag from
 // accidentally having the same value
 const USE_RAW_DELTA_TIME = Symbol();
@@ -23,6 +20,7 @@ class KEngine {
 
   /**
    * All entities that are currently being managed by the engine.
+   * @private
    * @type {Entity[]}
    */
   #entities = [];
@@ -34,17 +32,91 @@ class KEngine {
    */
   #sketch;
 
+  // public getter/setter for the render target
+  get renderTarget() {
+    return this.#renderTarget;
+  }
+  set renderTarget(rt) {
+    this.#renderTarget = rt;
+    this.#screenWidth = rt.width;
+    this.#screenHeight = rt.height;
+  }
+
   /**
    * Where entities are rendered to when the engine's `render` method is called.
    * Note: This only affects what is passed to each entity's `render` method, so
    * it will have no effect unless the entity draws to it.
+   * @private
    * @type {!Renderable}
    */
-  renderTarget;
+  #renderTarget;
+
+  /**
+   * @private
+   * @type {number}
+   */
+  #screenWidth;
+  /**
+  * @private
+  * @type {number}
+  */
+  #screenHeight;
+
+  // public getter/setter for camera position
+  get cameraPos() {
+    return this.#cameraPos;
+  }
+  set cameraPos(pos) {
+    this.#cameraPos = pos;
+    this.cameraTarget = pos;
+  }
+
+  /**
+   * The current position of the camera.
+   * @private
+   * @type {p5.Vector}
+   */
+  #cameraPos = new p5.Vector;
+
+  /**
+   * The position the camera is attempting to reach.
+   * @type {p5.Vector}
+   */
+  cameraTarget = new p5.Vector;
+
+  // getter/setter for camera anchor
+  get cameraAnchor() {
+    return new p5.Vector(-this.#cameraOffset.x, -this.#cameraOffset.y);
+  }
+  set cameraAnchor(anchor) {
+    this.#cameraOffset.x = -anchor.x;
+    this.#cameraOffset.y = -anchor.y;
+  }
+
+  /**
+   * The offset of the camera; defaults to placing the camera at the center of
+   * the screen.
+   * @private
+   * @type {p5.Vector}
+   */
+  #cameraOffset = new p5.Vector;
+
+  /**
+   * Determines how closely the camera position follows the target. A tightness
+   * of 1 causes the camera to always be at the target position, a tightness of
+   * 0 causes the camera to never move regardless of the target position, and a
+   * tightness between 0 and 1 causes the camera to move toward the target
+   * position over multiple frames.
+   * 
+   * Note: Camera speeds are currently framerate-dependent for performance
+   * reasons (also, trying to fix it is confusing and it makes my brain hurt).
+   * @type {number}
+   */
+  cameraTightness = 1;
 
   /**
    * The time between the last 2 updates, in seconds.
-   * @type {float}
+   * @type {number}
    */
   get deltaTimeRaw() {
     return this.#sketch.deltaTime / 1000;
@@ -53,7 +125,7 @@ class KEngine {
   /**
    * The time between the last 2 updates, in seconds, multiplied by the current
    * delta time multiplier.
-   * @type {float}
+   * @type {number}
    */
   get deltaTime() {
     return this.#sketch.deltaTime / 1000 * this.deltaTimeMultiplier;
@@ -61,7 +133,7 @@ class KEngine {
 
   /**
    * The number of entities currently in the engine.
-   * @type {int}
+   * @type {number}
    */
   get numEntities() {
     return this.#entities.length;
@@ -74,9 +146,25 @@ class KEngine {
    * (the default) keeps the same speed, a multiplier > 1 increases speed, and 
    * a multiplier < 1 lowers speed. Multipliers <= 0 create undefined behavior
    * (in other words, it's probably bad but I don't feel like testing it)!
-   * @type {float}
+   * @type {number}
    */
   deltaTimeMultiplier = 1;
+
+  /**
+   * Creates a new KEngine.
+   * @constructor
+   * @param {Window | p5} sketch The sketch instance to define input listeners
+   *    for. If you're running your code in global mode, this should be
+   *    `window`. If you're running your code in instance mode, this should be
+   *    the same object you're defining `setup` and `draw` for.
+   */
+  constructor(sketch) {
+    this.#sketch = sketch;
+    this.renderTarget = sketch;
+    this.cameraAnchor = new p5.Vector(this.#screenWidth / 2,
+                                      this.#screenHeight / 2);
+    this.cameraPos = this.cameraAnchor;
+  }
 
   /**
    * Adds an entity to the engine.
@@ -114,6 +202,11 @@ class KEngine {
 
     // remove deleted entities
     this.#entities = this.#entities.filter((e) => !e.markForDelete);
+
+    // update the camera position if necessary
+    if (!this.#cameraPos.equals(this.cameraTarget)) {
+      this.#cameraPos.lerp(this.cameraTarget, this.cameraTightness);
+    }
   }
 
   /**
@@ -121,9 +214,14 @@ class KEngine {
    * @method
    */
   render() {
-    for (let e of this.#entities) {
-      if (!e.disableRender) e.render(this.renderTarget);
-    }
+    let renderOffset = p5.Vector.add(this.#cameraPos, this.#cameraOffset);
+
+    this.#renderTarget.push();
+    this.#renderTarget.translate(-renderOffset.x, -renderOffset.y);
+      for (let e of this.#entities) {
+        if (!e.disableRender) e.render(this.#renderTarget);
+      }
+    this.#renderTarget.pop();
   }
 
   /**
@@ -174,19 +272,6 @@ class KEngine {
    */
   getTagged(tag) {
     return this.getIf((e) => e.hasTag(tag));
-  }
-
-  /**
-   * Creates a new KEngine.
-   * @constructor
-   * @param {Window | p5} sketch The sketch instance to define input listeners
-   *    for. If you're running your code in global mode, this should be
-   *    `window`. If you're running your code in instance mode, this should be
-   *    the same object you're defining `setup` and `draw` for.
-   */
-  constructor(sketch) {
-    this.#sketch = sketch;
-    this.renderTarget = sketch;
   }
 }
 
@@ -248,7 +333,7 @@ class KEntity {
    * Updates the entity, called by `KEngine.update()`. Only does something if
    * you override it in your entity class.
    * @method
-   * @param {float} dt - The time between the previous 2 updates, in seconds.
+   * @param {number} dt - The time between the previous 2 updates, in seconds.
    *    Multiplying things like velocity by this allows you to run them at the
    *    same speed, regardless of framerate.
    */

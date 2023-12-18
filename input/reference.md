@@ -107,18 +107,18 @@ string with the name of the action, which you'll use when you check its state.
 `keys` is an array containing every key or mouse button that can trigger the
 action.
 
-The third parameter, `mode`, is a string that determines the action's activation
-mode, which can be either `"continuous"`, `"press"`, or `"release"`:
-- `"continuous"` actions are active on every frame that a key bound to them is
+The third parameter, `mode`, determines the action's activation mode, which can
+be either `CONTINUOUS`, `PRESS`, or `RELEASE`:
+- `CONTINUOUS` actions are active on every frame that a key bound to them is
   pressed.
-- `"press"` actions are active for a single frame when a key bound to them is
+- `PRESS` actions are active for a single frame when a key bound to them is
   initially pressed. After activating, they won't activate again until every key
   bound to them is released for at least one frame.
-- `"release"` actions are active for a single frame when every key bound to them
+- `RELEASE` actions are active for a single frame when every key bound to them
   is initially released. After activating, they won't activate again until at
   least one key bound to them is released for at least one frame.
 
-The default activation mode is `"continuous"`.
+The default activation mode is `CONTINUOUS`.
 
 The fourth parameter, `chord`, is a boolean that sets whether the action is a
 chord. Chord actions can only become active when every key bound to them is
@@ -144,7 +144,7 @@ function setup() {
   input.addAction({
     name: "a press action with multiple keys",
     keys: [Key.SHIFT, Key.LEFT_MOUSE],
-    mode: "press"
+    mode: PRESS
   });
   input.addAction({
     name: "a chord action with a callback function",
@@ -165,8 +165,8 @@ function setup() {
 - `keys`: (`Key[]`) An array containing all keys or mouse buttons that can
     activate the action.
 - `mode`: (optional `string`) The action's activation mode, either
-    `"continuous"`, `"press"`, or `"release"` (any other values will cause an
-    error). The default value is `"continuous"`.
+    `CONTINUOUS`, `PRESS`, or `RELEASE` (any other values will cause an
+    error). The default value is `CONTINUOUS`.
 - `chord`: (optional `boolean`) If `true`, the action can only activate whenever
     every key or button bound to it is pressed at the same time. The default
     value is `false`.

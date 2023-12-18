@@ -113,6 +113,11 @@ const Key = {
   QUOTE: 222
 }
 
+// action activation modes
+const CONTINUOUS = Symbol();
+const PRESS = Symbol();
+const RELEASE = Symbol();
+
 /**
  * Class that handles the improved (read: useable) input system.
  * @class
@@ -137,13 +142,13 @@ class KInput {
    * @property {boolean} active Whether the action is active ("pressed") or not.
    * @property {Key[]} keys All keys and/or mouse buttons that can activate the
    *    action.
-   * @property {("continuous" | "press" | "release")} mode Determines when the
-   *    action becomes active:
-   *    - `continuous` actions are active whenever a key or button bound to them
+   * @property {(CONTINUOUS | PRESS | RELEASE)} mode Determines when the action
+   *    becomes active:
+   *    - `CONTINUOUS` actions are active whenever a key or button bound to them
    *      is pressed.
-   *    - `press` actions are active for a single frame the first time a key or
+   *    - `PRESS` actions are active for a single frame the first time a key or
    *      button bound to them is pressed.
-   *    - `release` actions are active for a single frame the first time a key
+   *    - `RELEASE` actions are active for a single frame the first time a key
    *      or button bound to them is released.
    * 
    *    The default activation mode is `"continuous"`.
@@ -249,13 +254,13 @@ class KInput {
    * @param {Key[]} action.keys All keys and/or mouse buttons that can
    *    activate the action. Can be a single value instead of an array if only
    *    one key/button is bound to the action.
-   * @param {("continuous" | "press" | "release")} [action.mode] The action's
+   * @param {(CONTINUOUS | PRESS | RELEASE)} [action.mode] The action's
    *    activation mode, which determines when it becomes active:
-   *    - `continuous` actions are active whenever a key or button bound to them
+   *    - `CONTINUOUS` actions are active whenever a key or button bound to them
    *      is pressed.
-   *    - `press` actions are active for a single frame the first time a key or
+   *    - `PRESS` actions are active for a single frame the first time a key or
    *      button bound to them is pressed.
-   *    - `release` actions are active for a single frame the first time a key
+   *    - `RELEASE` actions are active for a single frame the first time a key
    *      or button bound to them is released.
    * 
    *    The default activation mode is `"continuous"`.
@@ -267,7 +272,7 @@ class KInput {
    *    automatically on every frame that the action is active. The default
    *    callback does nothing.
    */
-  addAction({name, keys, mode="continuous", chord=false, callback=(()=>{})}) {
+  addAction({name, keys, mode=CONTINUOUS, chord=false, callback=(()=>{})}) {
     /* do way too many checks so every argument gets a descriptive error message
      * if it's invalid (you're welcome) */
 
@@ -286,7 +291,7 @@ class KInput {
     }
 
     // make sure the activation mode is valid
-    if (!(["continuous", "press", "release"].includes(mode))) {
+    if (mode !== CONTINUOUS && mode !== PRESS && mode !== RELEASE) {
       throw new TypeError(`The input action "${name}" has an invalid ` +
           `activation mode (Expected "continuous", "press", or "release", ` +
           `received "${mode}")!`);
@@ -302,6 +307,13 @@ class KInput {
     if (typeof callback !== "function") {
       throw new TypeError(`The input action "${name}" has an invalid ` +
         `callback (expected a function, recieved a(n) ${typeof callback})`);
+    }
+
+    // overwriting an input won't break anything, but you probably don't want to
+    // do it by accident either
+    if (this.#inputActions[name] !== undefined) {
+      console.warn(`The input action "${name}" already exists and has been ` +
+          `overwritten.`);
     }
 
     // create the new action  and give it all of the easy properties
@@ -327,12 +339,12 @@ class KInput {
     }
     
     // set update method based on activation mode
-    if (action.mode === "continuous") {
+    if (action.mode === CONTINUOUS) {
       action.update = (keyStates) => {
         action.active = action.boundKeyPressed(keyStates);
       }
     }
-    else if (action.mode === "press") {
+    else if (action.mode === PRESS) {
       action.wasActive = false;
       action.update = (keyStates) => {
         if (action.boundKeyPressed(keyStates)) {
