@@ -7,6 +7,7 @@ const USE_RAW_DELTA_TIME = Symbol();
  * @class
  */
 class KEngine {
+  /* jsdoc typedefs */
   /**
    * A user-defined game entity class. Can be literally anything as long as it
    * derives from KEntity.
@@ -18,6 +19,15 @@ class KEngine {
    * @typedef {(Window | p5 | p5.Graphics | p5.Framebuffer)} Renderable
    */
 
+
+  /* simulation vars */
+  /**
+   * The sketch instance containing the engine.
+   * @private
+   * @type {Window | p5}
+   */
+  #sketch;
+
   /**
    * All entities that are currently being managed by the engine.
    * @private
@@ -26,13 +36,101 @@ class KEngine {
   #entities = [];
 
   /**
-   * The sketch instance containing the engine.
-   * @private
-   * @type {Window | p5}
+   * The number of entities currently in the engine.
+   * @type {number}
    */
-  #sketch;
+  get numEntities() {
+    return this.#entities.length;
+  }
 
-  // public getter/setter for the render target
+  /**
+   * The time between the last 2 updates, in seconds.
+   * @type {number}
+   */
+  get deltaTimeRaw() {
+    return this.#lastDt;
+  }
+
+  /**
+   * The time between the last 2 updates, in seconds, multiplied by the current
+   * delta time multiplier.
+   * @type {number}
+   */
+  get deltaTime() {
+    return this.#lastDt * this.deltaTimeMultiplier;
+  }
+
+  /**
+   * The time between the last 2 updates, in second.
+   * @private
+   * @type {number}
+   */
+  #lastDt = 0;
+
+  /**
+   * How many seconds have passed since the last update.
+   * @private
+   * @type {number}
+   */
+  #dtCounter = 0;
+
+  /**
+   * The current delta time multiplier or "speed of time". When entities are
+   * updated, their update method is passed the current delta time multiplied
+   * by this unless the entity has the USE_RAW_DELTA_TIME tag. A multiplier of 1
+   * (the default) keeps the same speed, a multiplier > 1 increases speed, and 
+   * a multiplier < 1 lowers speed. Multipliers <= 0 create undefined behavior
+   * (in other words, it's probably bad but I don't feel like testing it)!
+   * @type {number}
+   */
+  deltaTimeMultiplier = 1;
+
+  /**
+   * The current tick rate, which determines how many times per second the
+   * engine updates (it's like frame rate, but for updating instead of drawing).
+   * The default tick rate is the sketch's frame rate. Note: The tick rate must
+   * be > 0!
+   * @type {number}
+   */
+  get tickRate() {
+    return this.#tickRate;
+  }
+  set tickRate(rate) {
+    if (rate <= 0) {
+      throw new Error("Tick rate cannot be <= 0!");
+    }
+    else if (rate < 60) {
+      console.warn(`Tick rate of ${rate} tps is low and may cause a choppy ` +
+          `simulation (recommended tick rate is >= 60 tps).`);
+    }
+    this.#tickRate = rate;
+    this.#secondsPerTick = 1 / rate;
+  }
+
+  /**
+   * The current tick rate, which determines how many times per second the
+   * engine updates (it's like frame rate, but for updating instead of drawing).
+   * The default tick rate is the sketch's frame rate.
+   * @private
+   * @type {number}
+   */
+  #tickRate;
+
+  /**
+   * How long to wait before performing another update cycle, in seconds.
+   * @private
+   * @type {number}
+   */
+  #secondsPerTick;
+
+
+  /* rendering and camera vars */
+  /**
+   * Where entities are rendered to when the engine's `render` method is called.
+   * Note: This only affects what is passed to each entity's `render` method, so
+   * it will have no effect unless the entity draws to it.
+   * @type {Renderable}
+   */
   get renderTarget() {
     return this.#renderTarget;
   }
@@ -40,6 +138,11 @@ class KEngine {
     this.#renderTarget = rt;
     this.#screenWidth = rt.width;
     this.#screenHeight = rt.height;
+    // changing the render target resets camera settings
+    this.cameraAnchor = new p5.Vector(this.#screenWidth / 2,
+                                      this.#screenHeight / 2);
+    this.cameraPos = this.cameraAnchor;
+    this.useCameraBoundary = false;
   }
 
   /**
@@ -47,7 +150,7 @@ class KEngine {
    * Note: This only affects what is passed to each entity's `render` method, so
    * it will have no effect unless the entity draws to it.
    * @private
-   * @type {!Renderable}
+   * @type {Renderable}
    */
   #renderTarget;
 
@@ -62,7 +165,12 @@ class KEngine {
   */
   #screenHeight;
 
-  // public getter/setter for camera position
+  /**
+   * The position of the camera in world space. If `useCameraBoundary` is
+   * `true`, the camera position will always be constrained within the world
+   * boundary.
+   * @type {number}
+   */
   get cameraPos() {
     return this.#cameraPos;
   }
@@ -84,13 +192,27 @@ class KEngine {
    */
   cameraTarget = new p5.Vector;
 
-  // getter/setter for camera anchor
+  /**
+   * A vector that etermines what point on the screen the camera position
+   * corresponds to. An anchor of `(0, 0)` places the camera at the top left
+   * corner of the screen, an anchor of `(width, height)` places the camera at
+   * the bottom right corner of the screen, and so on. The default camera anchor
+   * is `(width / 2, height / 2)`, which places the camera at the center of the
+   * screen.
+   */
   get cameraAnchor() {
     return new p5.Vector(-this.#cameraOffset.x, -this.#cameraOffset.y);
   }
   set cameraAnchor(anchor) {
-    this.#cameraOffset.x = -anchor.x;
-    this.#cameraOffset.y = -anchor.y;
+    // the camera anchor can be set from either a PVector or an array of coords
+    if (anchor.constructor === Array) {
+      this.#cameraOffset.x = -anchor[0];
+      this.#cameraOffset.y = -anchor[1];
+    }
+    else {
+      this.#cameraOffset.x = -anchor.x;
+      this.#cameraOffset.y = -anchor.y;
+    }
   }
 
   /**
@@ -106,49 +228,84 @@ class KEngine {
    * of 1 causes the camera to always be at the target position, a tightness of
    * 0 causes the camera to never move regardless of the target position, and a
    * tightness between 0 and 1 causes the camera to move toward the target
-   * position over multiple frames.
-   * 
-   * Note: Camera speeds are currently framerate-dependent for performance
-   * reasons (also, trying to fix it is confusing and it makes my brain hurt).
+   * position over multiple ticks.
    * @type {number}
    */
   cameraTightness = 1;
 
   /**
-   * The time between the last 2 updates, in seconds.
+   * Enables or disables the camera boundary. If `true`, the position of the
+   * camera will be limited to only display areas within the world boundary,
+   * which is defined by worldWidth and worldHeight. The default is `false`.
+   * @type {boolean}
+   */
+  useCameraBoundary = false;
+
+  /**
+   * The maximum render offset in the x direction (assuming the camera boundary
+   * is enabled).
+   * @private
    * @type {number}
    */
-  get deltaTimeRaw() {
-    return this.#sketch.deltaTime / 1000;
+  #maxRenderX;
+
+  /**
+   * The maximum render offset in the y direction (assuming the camera boundary
+   * is enabled).
+   * @private
+   * @type {number}
+   */
+  #maxRenderY;
+
+
+  /* world vars */
+  /**
+   * The width of the world; used for the camera boundary.
+   * @type {number}
+   */
+  get worldWidth() {
+    return this.#worldWidth;
+  }
+  set worldWidth(w) {
+    this.#worldWidth = w;
+    this.#maxRenderX = this.#worldWidth - this.#screenWidth;
   }
 
   /**
-   * The time between the last 2 updates, in seconds, multiplied by the current
-   * delta time multiplier.
+   * The width of the world; used for the camera boundary.
+   * @private
    * @type {number}
    */
-  get deltaTime() {
-    return this.#sketch.deltaTime / 1000 * this.deltaTimeMultiplier;
-  }
+  #worldWidth;
 
   /**
-   * The number of entities currently in the engine.
+   * The height of the world; used for the camera boundary.
    * @type {number}
    */
-  get numEntities() {
-    return this.#entities.length;
+  get worldHeight() {
+    return this.#worldHeight;
+  }
+  set worldHeight(w) {
+    this.#worldHeight = w;
+    this.#maxRenderY = this.#worldHeight - this.#screenHeight;
   }
 
-  /**
-   * The current delta time multiplier or "speed of time". When entities are
-   * updated, their update method is passed the current delta time multiplied
-   * by this unless the entity has the USE_RAW_DELTA_TIME tag. A multiplier of 1
-   * (the default) keeps the same speed, a multiplier > 1 increases speed, and 
-   * a multiplier < 1 lowers speed. Multipliers <= 0 create undefined behavior
-   * (in other words, it's probably bad but I don't feel like testing it)!
+   /**
+   * The height of the world; used for the camera boundary.
+   * @private
    * @type {number}
    */
-  deltaTimeMultiplier = 1;
+  #worldHeight;
+
+  /**
+   * The size of the world; used for the camera boundary.
+   * @param {[number, number]} size
+   */
+  set worldSize(size) {
+    this.worldWidth = size[0];
+    this.worldHeight = size[1];
+  }
+
 
   /**
    * Creates a new KEngine.
@@ -164,6 +321,7 @@ class KEngine {
     this.cameraAnchor = new p5.Vector(this.#screenWidth / 2,
                                       this.#screenHeight / 2);
     this.cameraPos = this.cameraAnchor;
+    this.tickRate = sketch.getTargetFrameRate();
   }
 
   /**
@@ -189,10 +347,16 @@ class KEngine {
    * @method
    */
   update() {
+    // increment the dt counter and stop execution if we don't need to update
+    this.#dtCounter += this.#sketch.deltaTime / 1000;
+    if (this.#dtCounter < this.#secondsPerTick) return;
+
+    this.#lastDt = this.#dtCounter;
+    this.#dtCounter = 0;
+
     // save the multiplied delta time to prevent any weirdness if something
     // changes the multiplier midway through the update cycle
-    let dt = this.deltaTime;
-
+    let dt = this.#lastDt * this.deltaTimeMultiplier;
     for (let e of this.#entities) {
       if (!e.disableUpdate && !e.markForDelete) {
         if (e.hasTag(USE_RAW_DELTA_TIME)) e.update(this.deltaTimeRaw);
@@ -214,10 +378,18 @@ class KEngine {
    * @method
    */
   render() {
-    let renderOffset = p5.Vector.add(this.#cameraPos, this.#cameraOffset);
+    // calculate camera position
+    let renderX = this.#cameraPos.x + this.#cameraOffset.x;
+    let renderY = this.#cameraPos.y + this.#cameraOffset.y;
+
+    // apply camera boundary
+    if (this.useCameraBoundary) {
+      renderX = this.#sketch.constrain(renderX, 0, this.#maxRenderX);
+      renderY = this.#sketch.constrain(renderY, 0, this.#maxRenderY);
+    }
 
     this.#renderTarget.push();
-    this.#renderTarget.translate(-renderOffset.x, -renderOffset.y);
+    this.#renderTarget.translate(-renderX, -renderY);
       for (let e of this.#entities) {
         if (!e.disableRender) e.render(this.#renderTarget);
       }
