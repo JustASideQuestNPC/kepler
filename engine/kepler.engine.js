@@ -1,6 +1,7 @@
 // reserved entity tags - these are symbols to prevent a user-defined tag from
 // accidentally having the same value
-const USE_RAW_DELTA_TIME = Symbol();
+const USES_RAW_DELTA_TIME = Symbol();
+const USES_SCREEN_SPACE_COORDS = Symbol();
 
 /**
  * Primary game engine class that manages rendering and updates for all entities
@@ -257,6 +258,22 @@ class KEngine {
    */
   #maxRenderY;
 
+  /**
+   * Where the canvas is translating to in the x direction; used for coordinate
+   * conversions.
+   * @private
+   * @type {number}
+   */
+  #renderX = 0;
+
+  /**
+   * Where the canvas is translating to in the y direction; used for coordinate
+   * conversions.
+   * @private
+   * @type {number}
+   */
+  #renderY = 0;
+
 
   /* world vars */
   /**
@@ -359,7 +376,7 @@ class KEngine {
     let dt = this.#lastDt * this.deltaTimeMultiplier;
     for (let e of this.#entities) {
       if (!e.disableUpdate && !e.markForDelete) {
-        if (e.hasTag(USE_RAW_DELTA_TIME)) e.update(this.deltaTimeRaw);
+        if (e.hasTag(USES_RAW_DELTA_TIME)) e.update(this.deltaTimeRaw);
         else e.update(dt);
       }
     }
@@ -379,19 +396,29 @@ class KEngine {
    */
   render() {
     // calculate camera position
-    let renderX = this.#cameraPos.x + this.#cameraOffset.x;
-    let renderY = this.#cameraPos.y + this.#cameraOffset.y;
+    this.#renderX = this.#cameraPos.x + this.#cameraOffset.x;
+    this.#renderY = this.#cameraPos.y + this.#cameraOffset.y;
 
     // apply camera boundary
     if (this.useCameraBoundary) {
-      renderX = this.#sketch.constrain(renderX, 0, this.#maxRenderX);
-      renderY = this.#sketch.constrain(renderY, 0, this.#maxRenderY);
+      this.#renderX = this.#sketch.constrain(this.#renderX, 0, this.#maxRenderX);
+      this.#renderY = this.#sketch.constrain(this.#renderY, 0, this.#maxRenderY);
     }
 
     this.#renderTarget.push();
-    this.#renderTarget.translate(-renderX, -renderY);
+    this.#renderTarget.translate(-this.#renderX, -this.#renderY);
       for (let e of this.#entities) {
-        if (!e.disableRender) e.render(this.#renderTarget);
+        if (e.disableRender) continue; // continue to reduce nesting
+
+        if (e.hasTag(USES_SCREEN_SPACE_COORDS)) {
+          // translate back to (0, 0)
+          this.#renderTarget.translate(this.#renderX, this.#renderY);
+          e.render(this.#renderTarget);
+          this.#renderTarget.translate(-this.#renderX, -this.#renderY);
+        }
+        else {
+          e.render(this.#renderTarget);
+        }
       }
     this.#renderTarget.pop();
   }
@@ -445,6 +472,46 @@ class KEngine {
   getTagged(tag) {
     return this.getIf((e) => e.hasTag(tag));
   }
+
+  /**
+   * Converts a position in screen space to a position in world space.
+   * @overload
+   * @param {p5.Vector} arg1
+   * @returns {p5.Vector}
+   *
+   * @overload
+   * @param {number} arg1 x coordinate in screen space
+   * @param {number} arg2 y coordinate in screen space
+   * @returns {[number, number]}
+   */
+  screenPosToWorldPos(arg1, arg2) {
+    if (arg1.constructor === p5.Vector) {
+      return new p5.Vector(arg1.x + this.#renderX, arg1.y + this.#renderY);
+    }
+    else {
+      return [arg1 + this.#renderX, arg2 + this.#renderY]
+    }
+  }
+
+  /**
+   * Converts a position in world space to a position in screen space.
+   * @overload
+   * @param {p5.Vector} arg1
+   * @returns {p5.Vector}
+   *
+   * @overload
+   * @param {number} arg1 x coordinate in world space
+   * @param {number} arg2 y coordinate in world space
+   * @returns {[number, number]}
+   */
+  worldPosToScreenPos(arg1, arg2) {
+    if (arg1.constructor === p5.Vector) {
+      return new p5.Vector(arg1.x - this.#renderX, arg1.y - this.#renderY);
+    }
+    else {
+      return [arg1 - this.#renderX, arg2 - this.#renderY]
+    }
+  }
 }
 
 /**
@@ -461,8 +528,11 @@ class KEntity {
    * Tags can be whatever you want (strings are typically easiest, but the
    * built-in ones are Symbols), but there are a few built-in tags with reserved
    * names:
-   * - Entities with the `USE_RAW_DELTA_TIME` tag will have the "true" delta
+   * - Entities with the `USES_RAW_DELTA_TIME` tag will have the "true" delta
    *   time passed to their `update` method, regardless of multiplier.
+   * - Entities with the `USES_SCREEN_SPACE_COORDS` will ignore camera position
+   *   when being rendered - (0, 0) in their `render` method will always be
+   *   at the top left corner of the screen.
    * @type {any[]}
    */
   tags = [];
