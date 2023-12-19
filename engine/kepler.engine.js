@@ -140,7 +140,7 @@ class KEngine {
     this.#screenWidth = rt.width;
     this.#screenHeight = rt.height;
     // changing the render target resets camera settings
-    this.cameraAnchor = new p5.Vector(this.#screenWidth / 2,
+    this.cameraAnchor = createVector(this.#screenWidth / 2,
                                       this.#screenHeight / 2);
     this.cameraPos = this.cameraAnchor;
     this.useCameraBoundary = false;
@@ -185,13 +185,13 @@ class KEngine {
    * @private
    * @type {p5.Vector}
    */
-  #cameraPos = new p5.Vector;
+  #cameraPos = createVector;
 
   /**
    * The position the camera is attempting to reach.
    * @type {p5.Vector}
    */
-  cameraTarget = new p5.Vector;
+  cameraTarget = createVector;
 
   /**
    * A vector that etermines what point on the screen the camera position
@@ -202,7 +202,7 @@ class KEngine {
    * screen.
    */
   get cameraAnchor() {
-    return new p5.Vector(-this.#cameraOffset.x, -this.#cameraOffset.y);
+    return createVector(-this.#cameraOffset.x, -this.#cameraOffset.y);
   }
   set cameraAnchor(anchor) {
     // the camera anchor can be set from either a PVector or an array of coords
@@ -222,7 +222,7 @@ class KEngine {
    * @private
    * @type {p5.Vector}
    */
-  #cameraOffset = new p5.Vector;
+  #cameraOffset = createVector;
 
   /**
    * Determines how closely the camera position follows the target. A tightness
@@ -335,7 +335,7 @@ class KEngine {
   constructor(sketch) {
     this.#sketch = sketch;
     this.renderTarget = sketch;
-    this.cameraAnchor = new p5.Vector(this.#screenWidth / 2,
+    this.cameraAnchor = createVector(this.#screenWidth / 2,
                                       this.#screenHeight / 2);
     this.cameraPos = this.cameraAnchor;
     this.tickRate = sketch.getTargetFrameRate();
@@ -486,7 +486,7 @@ class KEngine {
    */
   screenPosToWorldPos(arg1, arg2) {
     if (arg1.constructor === p5.Vector) {
-      return new p5.Vector(arg1.x + this.#renderX, arg1.y + this.#renderY);
+      return createVector(arg1.x + this.#renderX, arg1.y + this.#renderY);
     }
     else {
       return [arg1 + this.#renderX, arg2 + this.#renderY]
@@ -506,7 +506,7 @@ class KEngine {
    */
   worldPosToScreenPos(arg1, arg2) {
     if (arg1.constructor === p5.Vector) {
-      return new p5.Vector(arg1.x - this.#renderX, arg1.y - this.#renderY);
+      return createVector(arg1.x - this.#renderX, arg1.y - this.#renderY);
     }
     else {
       return [arg1 - this.#renderX, arg2 - this.#renderY]
