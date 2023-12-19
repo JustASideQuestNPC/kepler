@@ -8,6 +8,10 @@ let input;
 /** @type {number} */
 let counter = 0;
 
+function preload() {
+  loadJSON("../../extras/color-palette.json", loadPalette);
+}
+
 function setup() {
   createCanvas(600, 400);
 
@@ -51,7 +55,7 @@ function setup() {
 
 function draw() {
   input.update();
-  background("#ffffff");
+  background(TRUE_WHITE);
 
   noStroke();
   setFillColor("spacebar continuous");
@@ -72,7 +76,7 @@ function draw() {
   setFillColor("callback counter");
   ellipse(500, 300, 150, 150);
 
-  fill("#000000");
+  fill(BLACK);
   text("Spacebar\n(continuous)", 100, 100);
   text("Spacebar\n(press only)", 300, 100);
   text("Spacebar\n(release only)", 500, 100);
@@ -88,6 +92,6 @@ function draw() {
  * @param {string} name
  */
 function setFillColor(name) {
-  if (input.isActive(name)) fill("#56e949");
-  else fill("#f33b3b");
+  if (input.isActive(name)) fill(GREEN);
+  else fill(RED);
 }
