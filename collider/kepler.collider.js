@@ -59,6 +59,66 @@ class PointCollider {
   }
 
   /**
+   * Sets the collider's position in world space.
+   * @overload
+   * @param {number} x
+   * @param {number} y
+   * //**
+   * Sets the collider's position in world space.
+   * @overload
+   * @param {p5.Vector} vec
+   */
+  setPos(x, y) {
+    if (x instanceof p5.Vector) {
+      this.position.set(x);
+    }
+    else {
+      this.position.set(x, y)
+    }
+  }
+
+  /**
+   * Moves the collider in world space.
+   * @overload
+   * @param {number} x
+   * @param {number} y
+   * //**
+   * Moves the collider in world space.
+   * @overload
+   * @param {p5.Vector} vec
+   */
+  modPos(x, y) {
+    if (x instanceof p5.Vector) {
+      this.position.add(x);
+    }
+    else {
+      this.position.add(x, y);
+    }
+  }
+
+  /**
+   * In PolygonColliders, this rotates the collider to a specific angle. Points
+   * can't be rotated, so this throws a slightly more descriptive error message
+   * instead.
+   * @method
+   */
+  setAngle() {
+    throw new Error("`setAngle` can only be used with `PolygonCollider`, not " +
+        "`PointCollider`!");
+  }
+
+  /**
+   * In PolygonColliders, this rotates the collider by some angle relative to
+   * its current angle. Points can't be rotated, so this throws a slightly more
+   * descriptive error message instead.
+   * @method
+   */
+  modAngle() {
+    throw new Error("`modAngle` can only be used with `PolygonCollider`, not " +
+        "`PointCollider`!");
+  }
+
+  /**
    * Renders the point to the given canvas, or to the default window if no
    * canvas is provided.
    * @method
@@ -115,6 +175,75 @@ class LineCollider {
   constructor(x1, y1, x2, y2) {
     this.start = createVector(x1, y1);
     this.end = createVector(x2, y2);
+  }
+
+  /**
+   * Sets the collider's position in world space.
+   * @overload
+   * @param {number} x
+   * @param {number} y
+   * //**
+   * Sets the collider's position in world space.
+   * @overload
+   * @param {p5.Vector} vec
+   */
+  setPos(x, y) {
+    if (x instanceof p5.Vector) {
+      let delta = p5.Vector.sub(this.end, this.start);
+      this.start.set(x);
+      this.end.set(p5.Vector.add(this.start, delta));
+    }
+    else {
+      let dx = this.end.x - this.start.x;
+      let dy = this.end.y - this.start.y;
+      this.start.set(x, y);
+      this.end.set(x + dx, y + dy);
+    }
+  }
+
+  /**
+   * Moves the collider in world space.
+   * @overload
+   * @param {number} x
+   * @param {number} y
+   * //**
+   * Moves the collider in world space.
+   * @overload
+   * @param {p5.Vector} vec
+   */
+  modPos(x, y) {
+    if (x instanceof p5.Vector) {
+      this.start.add(x);
+      this.end.add(x);
+    }
+    else {
+      this.start.add(x, y);
+      this.end.add(x, y);
+    }
+  }
+
+  /**
+   * In PolygonColliders, this rotates the collider to a specific angle. Lines
+   * can't be rotated (technically they can be rotated, but that's too much math
+   * for me right now), so this throws a slightly more descriptive error message
+   * instead.
+   * @method
+   */
+  setAngle() {
+    throw new Error("`setAngle` can only be used with `PolygonCollider`, not " +
+        "`LineCollider`!");
+  }
+
+  /**
+   * In PolygonColliders, this rotates the collider by some angle relative to
+   * its current angle. Lines can't be rotated (technically they can be rotated,
+   * but that's too much math for me right now), so this throws a slightly more
+   * descriptive error message instead.
+   * @method
+   */
+  modAngle() {
+    throw new Error("`modAngle` can only be used with `PolygonCollider`, not " +
+        "`LineCollider`!");
   }
 
   /**
@@ -208,6 +337,58 @@ class CircleCollider {
   constructor(x, y, radius) {
     this.#position = createVector(x, y);
     this.radius = radius;
+  }
+
+  /**
+   * Sets the collider's position in world space.
+   * @overload
+   * @param {number} x
+   * @param {number} y
+   * //**
+   * Sets the collider's position in world space.
+   * @overload
+   * @param {p5.Vector} vec
+   */
+  setPos(x, y) {
+    if (x instanceof p5.Vector) this.#position.set(x);
+    else this.#position.set(x, y);
+  }
+
+  /**
+   * Moves the collider in world space.
+   * @overload
+   * @param {number} x
+   * @param {number} y
+   * //**
+   * Moves the collider in world space.
+   * @overload
+   * @param {p5.Vector} vec
+   */
+  modPos(x, y) {
+    if (x instanceof p5.Vector) this.#position.add(x);
+    else this.#position.add(x, y);
+  }
+
+  /**
+   * In PolygonColliders, this rotates the collider to a specific angle. Circles
+   * can't be rotated, so this throws a slightly more descriptive error message
+   * instead.
+   * @method
+   */
+  setAngle() {
+    throw new Error("`setAngle` can only be used with `PolygonCollider`, not " +
+        "`CircleCollider`!");
+  }
+
+  /**
+   * In PolygonColliders, this rotates the collider by some angle relative to
+   * its current angle. Circles can't be rotated, so this throws a slightly more
+   * descriptive error message instead.
+   * @method
+   */
+  modAngle() {
+    throw new Error("`modAngle` can only be used with `PolygonCollider`, not " +
+        "`CircleCollider`!");
   }
 
   /**
