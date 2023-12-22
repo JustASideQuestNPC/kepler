@@ -632,13 +632,10 @@ function circleToPolygonCollide(circle, polygon, transVec, invert) {
     circle.position.y - circle.radius, circle.radius * 2, circle.radius * 2);
   if (!circleBBox.intersectsBBox(getBBox(polygon))) return false;
 
-
   // this collision algorithm won't detect a collision if the circle is
   // completely inside the polygon, so we check for that here
   let pos = circle.position.copy();
   if (pointInPolygon(new PointCollider(pos.x, pos.y), polygon)) {
-    let centroid = getCentroid(polygon);
-    let startDistance = centroid.dist(circle.position);
 
     let closestPoint = createVector();
     let closestDistance = Infinity;
@@ -656,14 +653,12 @@ function circleToPolygonCollide(circle, polygon, transVec, invert) {
     if (transVec != null) {
       let delta = createVector();
       delta.set(p5.Vector.sub(pos, circle.position));
-      if (closestDistance < circle.radius) {
-        delta.set(-delta.x, -delta.y);
-      }
-      // let moveDistance = delta.mag() + circle.radius * 2;
-      // delta.setMag(moveDistance);
+      delta.setMag(delta.mag() + circle.radius);
+
       if (invert) delta.set(-delta.x, -delta.y);
       transVec.set(delta);
     }
+    return true;
   }
 
   // check if any of the edges on the polygon intersect the circle, and find the
