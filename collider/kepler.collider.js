@@ -38,6 +38,15 @@ class BoundingRect {
       (other.y + other.h) < this.y
     );
   }
+
+  /**
+   * Returns a copy of this bounding box.
+   * @method
+   * @returns {BoundingRect}
+   */
+  copy() {
+    return new BoundingRect(this.x, this.y, this.w, this.h);
+  }
 }
 
 /**
@@ -487,8 +496,8 @@ class PolygonCollider {
       this.#rotatedPoints.push(createVector(p[0], p[1]));
     }
 
-    this.#bbox = getBBox(this);
-    this.#rotatedBBox = getBBox(this);
+    this.#rotatedBBox = getBBox(this.#rotatedPoints);
+    this.#bbox = this.#rotatedBBox.copy();
 
     this.setPos(x, y);
   }
@@ -554,6 +563,8 @@ class PolygonCollider {
           p5.Vector.rotate(this.#absolutePoints[i], angle)
       );
     }
+    this.#rotatedBBox = getBBox(this.#rotatedPoints);
+    this.#bbox = this.#rotatedBBox.copy();
     this.setPos(this.#position.x, this.#position.y);
   }
 
@@ -566,6 +577,8 @@ class PolygonCollider {
     for (let p of this.#rotatedPoints) {
       p.rotate(angle);
     }
+    this.#rotatedBBox = getBBox(this.#rotatedPoints);
+    this.#bbox = this.#rotatedBBox.copy();
     this.setPos(this.#position.x, this.#position.y);
   }
 
@@ -618,16 +631,16 @@ class PolygonCollider {
  * Returns the axis-aligned bounding box for a polygon - this is the smallest
  * non-rotated rectangle that it will completely fit inside.
  * @function
- * @param {PolygonCollider} collider
+ * @param {p5.Vector[]} points
  * @returns {BoundingRect}
  */
-function getBBox(collider) {
+function getBBox(points) {
   let minX = Infinity;
   let maxX = -Infinity;
   let minY = Infinity;
   let maxY = -Infinity;
 
-  for (let p of collider.points) {
+  for (let p of points) {
     if (p.x < minX) minX = p.x;
     if (p.x > maxX) maxX = p.x;
     if (p.y < minY) minY = p.y;
@@ -811,7 +824,7 @@ function circleToPolygonCollide(circle, polygon, transVec, invert) {
   // without having to do precise checks against polygon edges
   let circleBBox = new BoundingRect(circle.position.x - circle.radius,
     circle.position.y - circle.radius, circle.radius * 2, circle.radius * 2);
-  if (!circleBBox.intersectsBBox(getBBox(polygon))) return false;
+  if (!circleBBox.intersectsBBox(polygon.bbox)) return false;
 
   // this collision algorithm won't detect a collision if the circle is
   // completely inside the polygon, so we check for that here
