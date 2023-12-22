@@ -14,7 +14,10 @@ let dynamicColliders = [];
 /** @type {Collider} */
 let currentDynamicCollider;
 /** @type {number} */
-let colliderIndex = 0;
+let dcIndex = 0;
+/** @type {string[]} */
+let colliderNames = ["PointCollider", "LineCollider", "CircleCollider",
+    "PolygonCollider"];
 
 function preload() {
   loadJSON("../../extras/color-palette.json", loadPalette);
@@ -29,8 +32,8 @@ function setup() {
     keys: [Key.LEFT_MOUSE],
     mode: PRESS,
     callback: () => {
-      colliderIndex = (colliderIndex + 1) % dynamicColliders.length;
-      currentDynamicCollider = dynamicColliders[colliderIndex];
+      dcIndex = (dcIndex + 1) % dynamicColliders.length;
+      currentDynamicCollider = dynamicColliders[dcIndex];
     }
   });
 
@@ -63,6 +66,9 @@ function setup() {
   ]);
 
   currentDynamicCollider = dynamicColliders[0];
+
+  textFont("monospace", 16);
+  textAlign(LEFT, TOP);
 }
 
 /* draw runs once per frame */
@@ -77,10 +83,12 @@ function draw() {
   noFill();
   strokeWeight(5);
   let colliding = false;
+  let name = "";
 
   if (currentDynamicCollider.isColliding(staticPoint)) {
     stroke(RED);
     colliding = true;
+    name = "PointCollider";
   }
   else {
     stroke(GREEN);
@@ -90,6 +98,7 @@ function draw() {
   if (currentDynamicCollider.isColliding(staticLine)) {
     stroke(RED);
     colliding = true;
+    name = "LineCollider";
   }
   else {
     stroke(GREEN);
@@ -102,6 +111,7 @@ function draw() {
     stroke(RED);
     colliding = true;
     hasMTV = true;
+    name = "CircleCollider";
   }
   else {
     stroke(GREEN);
@@ -112,6 +122,7 @@ function draw() {
     stroke(RED);
     colliding = true;
     hasMTV = true;
+    name = "PolygonCollider";
   }
   else {
     stroke(GREEN);
@@ -122,18 +133,23 @@ function draw() {
   else stroke(GREEN);
   currentDynamicCollider.render();
 
-  // for some reason this triggers even if there's no MTV and hasMTV is false??
-  // i'm not worrying about it tho, i've got too many other bugs to stomp :/
   if (colliding && hasMTV) {
     stroke(BLUE);
     currentDynamicCollider.modPos(transVec);
     currentDynamicCollider.render();
   }
 
+  // find what to display in the top left
+  let sidebarText = `Current collider: ${colliderNames[dcIndex]}`;
+  if (colliding) {
+    sidebarText += `\nColliding with: ${name}`;
+    if (hasMTV && dcIndex !== 0 && dcIndex !== 1) {
+      sidebarText += `\nTranslation vector: ` +
+      `(${Number(transVec.x).toFixed(2)}, ${Number(transVec.y).toFixed(2)})`;
+    }
+  }
+
   noStroke();
   fill(BLACK);
-  textSize(16);
-  textAlign(LEFT, TOP);
-  text(`MTV: (${Math.floor(transVec.x)}, ${Math.floor(transVec.y)})`, 5, 5);
+  text(sidebarText, 5, 5);
 }
-

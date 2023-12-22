@@ -145,7 +145,9 @@ class PointCollider {
    */
   isColliding(other) {
     if (other instanceof PointCollider) {
-      return this.position.equals(other.position);
+      // integer comparison so this might actually return true sometimes
+      return (Math.floor(this.position.x) === Math.floor(other.position.x) &&
+          Math.floor(this.position.y) === Math.floor(other.position.y));
     }
     else if (other instanceof LineCollider) {
       return pointOnLine(this, other);
@@ -154,7 +156,7 @@ class PointCollider {
       return pointInCircle(this, other);
     }
     else if (other instanceof PolygonCollider) {
-      return pointInPolygon(this, other);
+      return pointInPolygon(this.position, other);
     }
     else {
       throw (`"${typeof other}" is not a valid collider type!`);
@@ -610,7 +612,7 @@ class PolygonCollider {
    */
   isColliding(other, transVec=null) {
     if (other instanceof PointCollider) {
-      return pointInPolygon(other, this);
+      return pointInPolygon(other.position, this);
     }
     else if (other instanceof LineCollider) {
       return lineInPolygon(other, this);
@@ -682,20 +684,19 @@ function pointInCircle(point, circle) {
  * and extends to infinity, then counts how many times it crosses an edge of
  * the polygon. If that number is odd, the point is inside the polygon.
  * @function
- * @param {PointCollider} point
+ * @param {p5.Vector} pos
  * @param {PolygonCollider} polygon
  * @returns {boolean}
  */
-function pointInPolygon(point, polygon) {
+function pointInPolygon(pos, polygon) {
   // ray-casting algorithm based on
   // https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html
   let inside = false;
-  let pt = point.position;
   let points = polygon.points;
   for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
     let p1 = points[i], p2 = points[j];
-    if (((p1.y > pt.y) != (p2.y > pt.y)) && (pt.x < (p2.x - p1.x) *
-        (pt.y - p1.y) / (p2.y - p1.y) + p1.x)) {
+    if (((p1.y > pos.y) != (p2.y > pos.y)) && (pos.x < (p2.x - p1.x) *
+        (pos.y - p1.y) / (p2.y - p1.y) + p1.x)) {
       inside = !inside;
     }
   }
@@ -768,6 +769,10 @@ function getClosestPoint(a, b, pos) {
  * @returns {boolean} 
  */
 function lineInPolygon(line, polygon) {
+  // check if either endpoint is inside the polygon
+  if (pointInPolygon(line.start, polygon)
+    || pointInPolygon(line.end, polygon)) return true;
+
   // loop through each edge of the polygon and check if the line intersects
   // any of them
   for (let i = 0, j = polygon.points.length - 1; i < polygon.points.length;
@@ -829,7 +834,7 @@ function circleToPolygonCollide(circle, polygon, transVec, invert) {
   // this collision algorithm won't detect a collision if the circle is
   // completely inside the polygon, so we check for that here
   let pos = circle.position.copy();
-  if (pointInPolygon(new PointCollider(pos.x, pos.y), polygon)) {
+  if (pointInPolygon(pos, polygon)) {
 
     let closestPoint = createVector();
     let closestDistance = Infinity;
