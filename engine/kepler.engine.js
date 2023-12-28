@@ -156,6 +156,22 @@ class KEngine {
   #renderTarget;
 
   /**
+   * Width of the canvas the engine is rendering to.
+   * @type {number}
+   */
+  get renderWidth() {
+    return this.#screenWidth;
+  }
+
+  /**
+   * Height of the canvas the engine is rendering to.
+   * @type {number}
+   */
+  get renderHeight() {
+    return this.#screenHeight;
+  }
+
+  /**
    * @private
    * @type {number}
    */
@@ -185,13 +201,13 @@ class KEngine {
    * @private
    * @type {p5.Vector}
    */
-  #cameraPos = createVector;
+  #cameraPos = createVector();
 
   /**
    * The position the camera is attempting to reach.
    * @type {p5.Vector}
    */
-  cameraTarget = createVector;
+  cameraTarget = createVector();
 
   /**
    * A vector that etermines what point on the screen the camera position
@@ -222,7 +238,7 @@ class KEngine {
    * @private
    * @type {p5.Vector}
    */
-  #cameraOffset = createVector;
+  #cameraOffset = createVector();
 
   /**
    * Determines how closely the camera position follows the target. A tightness
@@ -327,10 +343,10 @@ class KEngine {
   /**
    * Creates a new KEngine.
    * @constructor
-   * @param {Window | p5} sketch The sketch instance to define input listeners
-   *    for. If you're running your code in global mode, this should be
-   *    `window`. If you're running your code in instance mode, this should be
-   *    the same object you're defining `setup` and `draw` for.
+   * @param {Window | p5} sketch The sketch instance the engine is running in.
+   *    If you're running your code in global mode, this should be `window`. If
+   *    you're running your code in instance mode, this should be the same
+   *    object you're defining `setup` and `draw` for.
    */
   constructor(sketch) {
     this.#sketch = sketch;
