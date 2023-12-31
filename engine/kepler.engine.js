@@ -323,7 +323,7 @@ class KEngine {
     this.#maxRenderY = this.#worldHeight - this.#screenHeight;
   }
 
-   /**
+  /**
    * The height of the world; used for the camera boundary.
    * @private
    * @type {number}
@@ -391,7 +391,7 @@ class KEngine {
     // changes the multiplier midway through the update cycle
     let dt = this.#lastDt * this.deltaTimeMultiplier;
     for (let e of this.#entities) {
-      if (!e.disableUpdate && !e.markForDelete) {
+      if (!e.markForDelete) {
         if (e.hasTag(USES_RAW_DELTA_TIME)) e.update(this.deltaTimeRaw);
         else e.update(dt);
       }
@@ -417,17 +417,17 @@ class KEngine {
 
     // apply camera boundary
     if (this.useCameraBoundary) {
-      this.#renderX = this.#sketch.constrain(this.#renderX, 0, this.#maxRenderX);
-      this.#renderY = this.#sketch.constrain(this.#renderY, 0, this.#maxRenderY);
+      this.#renderX = this.#sketch.constrain(this.#renderX, 0,
+          this.#maxRenderX);
+      this.#renderY = this.#sketch.constrain(this.#renderY, 0,
+          this.#maxRenderY);
     }
 
     this.#renderTarget.push();
     this.#renderTarget.translate(-this.#renderX, -this.#renderY);
       for (let e of this.#entities) {
-        if (e.disableRender) continue; // continue to reduce nesting
-
         if (e.hasTag(USES_SCREEN_SPACE_COORDS)) {
-          // translate back to (0, 0)
+          // translate back to (0, 0) and render the entity
           this.#renderTarget.translate(this.#renderX, this.#renderY);
           e.render(this.#renderTarget);
           this.#renderTarget.translate(-this.#renderX, -this.#renderY);
@@ -463,7 +463,7 @@ class KEngine {
    * Deletes all entities.
    * @method
    */
-  clearEntityList() {
+  removeAll() {
     this.#entities = [];
   }
 
@@ -531,21 +531,21 @@ class KEngine {
 }
 
 /**
- * Base class that custom entities should inherit from.
+ * Abstract base class that all entities should inherit from.
  * @class
  */
 class KEntity {
   /**
    * Tags can be used to indicate what entities are (i.e., a wall) and what they
    * can do (i.e., collide with the player). Entities can have any number of
-   * tags or none at all, but it's a good idea to at least give them a tag
-   * indicating what they are. 
+   * tags or none at all, but it's typically a good idea to at least give them a
+   * tag indicating what they are. 
    * 
    * Tags can be whatever you want (strings are typically easiest, but the
    * built-in ones are Symbols), but there are a few built-in tags with reserved
    * names:
-   * - Entities with the `USES_RAW_DELTA_TIME` tag will have the "true" delta
-   *   time passed to their `update` method, regardless of multiplier.
+   * - Entities with the `USES_RAW_DELTA_TIME` tag will always have the "true"
+   *   delta time passed to their `update` method.
    * - Entities with the `USES_SCREEN_SPACE_COORDS` will ignore camera position
    *   when being rendered - (0, 0) in their `render` method will always be
    *   at the top left corner of the screen.
@@ -570,25 +570,7 @@ class KEntity {
   markForDelete = false;
 
   /**
-   * If `true`, the entity will be skipped when the engine updates all entities.
-   * This should only be used to *temporarily* disable entities as the entity is
-   * still using memory and being checked in the loop - if you want to remove
-   * an entity permanently, use `entity.markForDelete` instead.
-   * @type {boolean}
-   */
-  disableUpdate = false;
-
-  /**
-   * If `true`, the entity will be skipped when the engine renders all entities.
-   * This should only be used to *temporarily* disable entities as the entity is
-   * still using memory and being checked in the loop - if you want to remove
-   * an entity permanently, use `entity.markForDelete` instead.
-   * @type {boolean}
-   */
-  disableRender = false;
-
-  /**
-   * Updates the entity, called by `KEngine.update()`. Only does something if
+   * Updates the entity; called in `KEngine.update()`. Only does something if
    * you override it in your entity class.
    * @method
    * @param {number} dt - The time between the previous 2 updates, in seconds.
@@ -598,7 +580,7 @@ class KEntity {
   update(dt) {}
 
   /**
-   * Renders the entity, called by `KEngine.render()`. Only does something if
+   * Renders the entity; called in `KEngine.render()`. Only does something if
    * you override it in your entity class.
    * @method
    * @param {Renderable} rt The sketch/graphics/etc. that the engine is
