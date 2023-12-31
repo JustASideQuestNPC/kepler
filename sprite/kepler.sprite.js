@@ -1,33 +1,22 @@
-// this is used to hack in private constructors for the internal sprite classes
-// we can't define it as a private member because the internal classes can't
-// access access them, so we define a temporary one here, give KSprite and the
-// internal classes copies of it, and then delete it when we're done so that no
-// one can access it externally.
+// this is used to hack in private constructors for the sprite classes - we
+// can't define it as a private member, so we define a temporary one here, give
+// KSpriteLoader and the internal classes copies of it, and then delete it when
+// we're done so that no one can access it externally.
 let tempCtorLock = Symbol();
 
 /**
  * Class that manages animations for sprites.
  * @class
  */
-class KSprite {
+class KSpriteLoader {
   static #CONSTRUCTOR_KEY = tempCtorLock;
-
-  /**
-   * If `true`, prints out a bunch of extra debug info while preloading sprites.
-   * This will *probably* be unavailable in the minified version (assuming a
-   * minified version exists when you're reading this).
-   * @static
-   * @type {boolean}
-   */
-  static VERBOSE_LOGGING = true;
 
   /**
    * Internal cache that holds data for sprites to make creating new KSprite
    * instances (hopefully) a lot faster.
    * @private
-   * @static
    */
-  static #spriteData = {};
+  #spriteData = {};
 
   /**
    * All supported extensions for image files. **(TODO: Figure out what other
@@ -39,30 +28,47 @@ class KSprite {
   static #SUPPORTED_FILE_TYPES = ["png", "jpg"]
 
   /**
+   * Sketch object to create sprites with and load images.
+   * @private
+   * @type {Window|p5}
+   */
+  #sketch;
+
+  /**
+   * Creates a new KSpriteLoader.
+   * @constructor
+   * @param {Window|p5} [sketch] The sketch object to use for creating sprites
+   *    and loading images. If you're running things in global mode, don't pass
+   *    anything here (if you want to pass something anyway, pass `window`). 
+   */
+  constructor(sketch=window) {
+    this.#sketch = sketch;
+  }
+
+  /**
    * Returns an image-only sprite with no animations. The image *must* have been
-   * loaded into the cache using `KSprite.preload()`!.
-   * @static
+   * loaded into the cache using `preload()`!.
    * @method
    * @param {string} name The name of the sprite's cache entry. If you didn't
    *    specify this when preloading it, it's the name of the image file, minus
    *    the extension and the rest of the path (for example, a sprite with an
    *    image at "assets/sprite/my-sprite.png" would have an entry named
    *    "my-sprite").
-   * @returns {KSprite.ImageSprite}
+   * @returns {KSpriteLoader.ImageSprite}
    */
-  static makeImageSprite(name) {
-    if (!KSprite.#spriteData.hasOwnProperty(name)) {
+  makeImageSprite(name) {
+    if (!this.#spriteData.hasOwnProperty(name)) {
       throw new Error(`The sprite "${name}" does not exist! (If it should, ` +
           `make sure you've loaded it with KSprite.preload() before calling ` +
           "this method)");
     }
-    if (KSprite.#spriteData[name].animated) {
+    if (this.#spriteData[name].animated) {
       throw new Error(`The sprite "${name}" is animated - use ` +
           "KSprite.makeAnimatedSprite() to create it instead.");
     }
 
-    return new KSprite.ImageSprite(KSprite.#CONSTRUCTOR_KEY,
-        KSprite.#spriteData[name]);
+    return new KSpriteLoader.ImageSprite(KSpriteLoader.#CONSTRUCTOR_KEY,
+        this.#spriteData[name]);
   }
 
   /**
@@ -70,7 +76,6 @@ class KSprite {
    * and breaks up spritesheets into objects that can be used by KSprite objects
    * for displaying animations. This should be called once in your sketch's
    * `preload` function with every image/animation you plan to use.
-   * @static
    * @async
    * @method
    * @param {any[]} files A list of the paths to each image (for sprites that
@@ -78,12 +83,8 @@ class KSprite {
    * animations) to preload. Objects can be used instead of strings to set other
    * data such as the sprite's name, display anchor, rotation, etc.
    */
-  static async preload(files) {
-    console.log(`Preloading ${files.length} sprite(s)...`);
-    let startTime = window.performance.now();
-
+  async preload(files) {
     for (let entry of files) {
-      let currentTime = window.performance.now();
 
       let spriteName, extension;
 
@@ -91,10 +92,6 @@ class KSprite {
       // can be passed to a loader
       let args;
       if (typeof entry === "string") {
-        if (KSprite.VERBOSE_LOGGING) {
-          console.log("┃ Loading " + `%c${entry}...`, "color:#30D6FF");
-          console.log("┃ ┃ Creating config object");
-        }
 
         args = {path: entry};
         // the file name minus the path
@@ -105,10 +102,6 @@ class KSprite {
         extension = entry.slice((entry.lastIndexOf(".") - 1 >>> 0) + 2);
       }
       else {
-        if (KSprite.VERBOSE_LOGGING) {
-          console.log(`┃ Loading ${entry.path}...`);
-          console.log("┃ ┃ Parsing config object");
-        }
         args = entry;
         if (entry.hasOwnProperty("name")) spriteName = entry.name;
         else {
@@ -121,42 +114,24 @@ class KSprite {
         extension = entry.path.slice(
             (entry.path.lastIndexOf(".") - 1 >>> 0) + 2);
       }
-      if (KSprite.VERBOSE_LOGGING) {
-        console.log("┃ ┃ Creating cache entry " + `%c"${spriteName}"`,
-            "color:#30D6FF");
-      }
-
-      if (KSprite.#spriteData.hasOwnProperty(spriteName)) {
-        console.warn(`The sprite "${spriteName}" already exists, did you ` +
-            "mean to overwrite it?");
-      }
 
       // delegate to the correct loader (or throw an error) - the loader methods
       // are defined as async for technical reasons so they all need to be
       // awaited
-      if (KSprite.#SUPPORTED_FILE_TYPES.includes(extension)) {
-        KSprite.#spriteData[spriteName] = await KSprite.#loadImageSprite(args);
+      if (KSpriteLoader.#SUPPORTED_FILE_TYPES.includes(extension)) {
+        this.#spriteData[spriteName] = await this.#loadImageSprite(args);
       }
       else {
         throw new Error(`The file "${args.path}" is an invalid file type! ` +
             `(Supported file types are [json] for animated sprites, and ` +
-            `[${KSprite.#SUPPORTED_FILE_TYPES}] for image sprites)`);
-      }
-
-      if (KSprite.VERBOSE_LOGGING) {
-        console.log("┃ ┗ " + "%cSprite loaded in " +
-            `${window.performance.now() - currentTime} ms`, "color:#23D18B");
+            `[${KSpriteLoader.#SUPPORTED_FILE_TYPES}] for image sprites)`);
       }
     }
-
-    console.log("┗ " +"%cSprite loading completed in " +
-        `${window.performance.now() - startTime} ms`, "color:#23D18B");
   }
   
   /**
    * Creates a data object for a sprite with a single image.
    * @private
-   * @static
    * @async
    * @param {Object} args
    * @param {string} args.path The path to the image.
@@ -171,111 +146,240 @@ class KSprite {
    *    alignment mode of the sprite's anchor, which determines what point it
    *    rotates around. The default anchor is the center of the sprite.
    * @param {number} [args.rotation] Initial rotation of the sprite.
-   * @param {number} [scaleX] Relative scale in the x direction. Negative values
-   *    mirror the sprite horizontally.
-   * @param {number} [scaleY] Relative scale in the y direction. Negative values
-   *    mirror the sprite vertically.
-   * @param {number} [width] Width of the sprite in pixels. Overrides scaleX if
-   *    both values are set.
-   * @param {number} [height] height of the sprite in pixels. Overrides scaleY
-   *    if both values are set.
+   * @param {number} [args.scaleX] Relative scale in the x direction. Negative
+   *    values mirror the sprite horizontally.
+   * @param {number} [args.scaleY] Relative scale in the y direction. Negative
+   *    values mirror the sprite vertically.
+   * @param {number} [args.width] Width of the sprite in pixels. Overrides
+   *    scaleX if both values are set.
+   * @param {number} [args.height] height of the sprite in pixels. Overrides
+   *    scaleY if both values are set.
    */
-  static async #loadImageSprite({path, x=0, y=0, anchorX="center",
-      anchorY="center", rotation=0, scaleX=0, scaleY=0, width=null,
+  async #loadImageSprite({path, x=0, y=0, anchorX="center",
+      anchorY="center", rotation=0, scaleX=1, scaleY=1, width=null,
       height=null}) {
 
     let data = {animated:false};
 
-    if (KSprite.VERBOSE_LOGGING) console.log("┃ ┃ Loading image from file");
+    await this.#sketch.loadImage(path,
+      // success callback
+      (img)=>{
+        data.image = img;
+        data.anchor = [];
+        if (typeof anchorX === "number") {
+          data.anchor[0] = anchorX;
+        }
+        else if (anchorX === "left") {
+          data.anchor[0] = 0;
+        }
+        else if (anchorX === "right") {
+          data.anchor[0] = data.image.width;
+        }
+        else if (anchorX === "center") {
+          data.anchor[0] = data.image.width / 2;
+        }
+        else {
+          throw new Error("Invalid horizontal anchor for sprite (Expected " + 
+              `"left", "center", "right", or a number, recieved "${anchorX}")`);
+        }
 
-    // setting data.image in the success callback somehow makes the error even
-    // messier if the image doesn't exist, but we still need to pass one if we
-    // want to use the failure callback
-    data.image = await loadImage(path, ()=>{},
+        if (typeof anchorY === "number") {
+          data.anchor[1] = anchorY;
+        }
+        else if (anchorY === "left") {
+          data.anchor[1] = 0;
+        }
+        else if (anchorY === "right") {
+          data.anchor[1] = data.image.height;
+        }
+        else if (anchorY === "center") {
+          data.anchor[1] = data.image.height / 2;
+        }
+        else {
+          throw new Error("Invalid vertical anchor for sprite (Expected " + 
+              `"left", "center", "right", or a number, recieved "${anchorY}")`);
+        }
+
+        data.scale = [scaleX, scaleY];
+        data.size = [];
+        if (width != null) {
+          data.size[0] = width;
+          data.scale[0] = width / data.image.width;
+        }
+        else {
+          data.size[0] = data.image.width * data.scale[0];
+        }
+
+        if (height != null) {
+          data.size[1] = height;
+          data.scale[1] = height / data.image.height;
+        }
+        else {
+          data.size[1] = data.image.height * data.scale[1];
+        }
+        data.position = [x, y];
+        data.rotation = rotation;
+        data.sketch = this.#sketch;
+      },
+      // failure callback
       (event) => {
         console.error(`The image at "${path}" does not exist!`, event);
       }
     );
-
-    if (KSprite.VERBOSE_LOGGING) console.log("┃ ┃ Calculating display anchor");
-    data.anchor = [];
-    if (typeof anchorX === "number") {
-      data.anchor[0] = anchorX;
-    }
-    else if (anchorX === "left") {
-      data.anchor[0] = 0;
-    }
-    else if (anchorX === "right") {
-      data.anchor[0] = data.image.width;
-    }
-    else if (anchorX === "center") {
-      data.anchor[0] = data.image.width / 2;
-    }
-    else {
-      throw new Error("Invalid horizontal anchor for sprite (Expected " + 
-          `"left", "center", "right", or a number, recieved "${anchorX}")`);
-    }
-
-    if (typeof anchorY === "number") {
-      data.anchor[0] = anchorY;
-    }
-    else if (anchorY === "left") {
-      data.anchor[0] = 0;
-    }
-    else if (anchorY === "right") {
-      data.anchor[0] = data.image.height;
-    }
-    else if (anchorY === "center") {
-      data.anchor[0] = data.image.height / 2;
-    }
-    else {
-      throw new Error("Invalid vertical anchor for sprite (Expected " + 
-          `"left", "center", "right", or a number, recieved "${anchorY}")`);
-    }
-    
-    if (KSprite.VERBOSE_LOGGING) console.log("┃ ┃ Calculating display size");
-
-    data.sourceSize = [data.image.width, data.image.height];
-    data.scale = [scaleX, scaleY];
-    data.size = [];
-    if (width != null) {
-      data.size[0] = width;
-    }
-    else {
-      data.size[0] = data.sourceSize[0] * data.scale[0];
-    }
-
-    if (height != null) {
-      data.size[1] = height;
-    }
-    else {
-      data.size[1] = data.sourceSize[1] * data.scale[1];
-    }
-
-    if (KSprite.VERBOSE_LOGGING) console.log("┃ ┃ Setting miscellaneous data");
-    data.position = [x, y];
-    data.rotation = rotation;
-
     return data;
   }
 }
 
 /**
- * Internal-ish class for a sprite that is a single image without animations.
+ * Class for a sprite that is a single image without animations.
  * @static
  * @class
  */
-KSprite.ImageSprite = class {
+KSpriteLoader.ImageSprite = class {
+  /** @type {p5.image} */
+  #image;
+
+  /** @type {Window|p5} */
+  #sketch;
+
+  /** @type {p5.Vector} */
+  position;
+
+  /** @type {p5.Vector} */
+  displayAnchor;
+
+  /** @type {number} */
+  #width;
+ 
+  /** @type {number} */
+  #height;
+
+  /** @type {number} */
+  rotation;
+
+  /** @type {number} */
+  #scaleX;
+
+  /** @type {number} */
+  #scaleY;
+
   static #CONSTRUCTOR_LOCK = tempCtorLock;
   constructor(key, data) {
-    if (key !== KSprite.ImageSprite.#CONSTRUCTOR_LOCK) {
+    if (key !== KSpriteLoader.ImageSprite.#CONSTRUCTOR_LOCK) {
       throw new Error("ImageSprites cannot be instantiated directly - use " +
           "KSprite.makeImageSprite() instead!");
     }
+
+    this.#sketch = data.sketch;
+    this.#image = data.image;
+    this.position = this.#sketch.createVector(data.position[0],
+        data.position[1]);
+    this.displayAnchor = this.#sketch.createVector(data.anchor[0],
+        data.anchor[1]);
+    this.#width = data.size[0];
+    this.#height = data.size[1];
+    this.rotation = data.rotation;
+    this.#scaleX = data.scale[0];
+    this.#scaleY = data.scale[1];
   }
 
-  test() {
-    console.log("this is a test");
+  /** @type {number} */
+  get x() { return this.position.x; }
+  set x(value) { this.position.x = value; }
+
+  /** @type {number} */
+  get y() { return this.position.y; }
+  set y(value) { this.position.y = value; }
+
+  /** @type {number} */
+  get anchorX() { return this.displayAnchor.x }
+  set anchorX(value) { this.displayAnchor.x = value; }
+
+  /** @type {number} */
+  get anchorY() { return this.displayAnchor.y }
+  set anchorY(value) { this.displayAnchor.y = value; }
+
+  /** @type {number} */
+  get sourceWidth() { return this.#image.width; }
+
+  /** @type {number} */
+  get sourceHeight() { return this.#image.height; }
+
+  /** @type {number} */
+  get width() { return this.#width; }
+  set width(value) {
+    this.#width = value;
+    this.#scaleX = this.#width / this.#image.width;
+  }
+
+  /** @type {number} */
+  get height() { return this.#height; }
+  set height(value) {
+    this.#height = value;
+    this.#scaleY = this.#height / this.#image.height;
+  }
+
+  /**
+   * Renders the sprite to a canvas.
+   * @method
+   * @param {any} renderTarget The canvas to render to; defaults to the main
+   *    canvas for the sketch the sprite was loaded with.
+   */
+  render(renderTarget=this.#sketch) {
+    renderTarget.push();
+    renderTarget.translate(this.position.x, this.position.y);
+    renderTarget.rotate(this.rotation);
+    renderTarget.image(this.#image, -this.displayAnchor.x * this.#scaleX,
+        -this.displayAnchor.y * this.#scaleY, this.#width, this.#height);
+    renderTarget.pop();
+  }
+
+  /**
+   * Scales the sprite and the display anchor relative to its current size.
+   * @overload
+   * @param {number} s
+   * 
+   * @overload
+   * @param {number} x
+   * @param {number} Y
+   */
+  scale(arg1, arg2) {
+    if (arg2 == null) {
+      this.#scaleX *= arg1;
+      this.#scaleY *= arg1;
+      this.#width *= arg1;
+      this.#height *= arg1;
+    }
+    else {
+      this.#scaleX *= arg1;
+      this.#scaleY *= arg2;
+      this.#width *= arg1;
+      this.#height *= arg2;
+    }
+  }
+
+  /**
+   * Scales the sprite and the display anchor relative to its source size.
+   * @overload
+   * @param {number} s
+   * 
+   * @overload
+   * @param {number} x
+   * @param {number} Y
+   */
+  scaleAbsolute(arg1, arg2) {
+    if (arg2 == null) {
+      this.#scaleX = arg1;
+      this.#scaleY = arg1;
+      this.#width = this.#image.width * arg1;
+      this.#height = this.#image.height * arg1;
+    }
+    else {
+      this.#scaleX = arg1;
+      this.#scaleY = arg2;
+      this.#width = this.#image.width * arg1;
+      this.#height = this.#image.height * arg2;
+    }
   }
 };
 
