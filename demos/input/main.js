@@ -2,7 +2,7 @@
  * Demo for kepler.input and the action system.
  */
 
-/** @type {KInput} */
+/** @type {Kepler.Input} */
 let input;
 
 /** @type {number} */
@@ -16,34 +16,34 @@ function setup() {
   createCanvas(600, 400);
 
   // create a manager and add some inputs
-  input = KInput.makeNew(window);
+  input = Kepler.Input.makeNew(window);
   input.addAction({
     name: "spacebar continuous",
-    keys: [Key.SPACE]
+    keys: [Kepler.Key.SPACE]
   });
   input.addAction({
     name: "spacebar press",
-    keys: [Key.SPACE],
-    mode: PRESS
+    keys: [Kepler.Key.SPACE],
+    mode: Kepler.PRESS
   });
   input.addAction({
     name: "spacebar release",
-    keys: [Key.SPACE],
-    mode: RELEASE
+    keys: [Kepler.Key.SPACE],
+    mode: Kepler.RELEASE
   });
   input.addAction({
     name: "multiple keys",
-    keys: [Key.A, Key.LEFT_MOUSE],
+    keys: [Kepler.Key.A, Kepler.Key.LEFT_MOUSE],
   });
   input.addAction({
     name: "chord action",
-    keys: [Key.SHIFT, Key.D],
+    keys: [Kepler.Key.SHIFT, Kepler.Key.D],
     chord: true
   });
   input.addAction({
     name: "callback counter",
-    keys: [Key.ENTER],
-    mode: PRESS,
+    keys: [Kepler.Key.ENTER],
+    mode: Kepler.PRESS,
     callback: () => {
       ++counter;
     }

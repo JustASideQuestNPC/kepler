@@ -1,17 +1,17 @@
-/** @type {KInput} */
+/** @type {Kepler.Input} */
 let input;
 
-/** @type {PointCollider} */
+/** @type {Kepler.PointCollider} */
 let staticPoint;
-/** @type {LineCollider} */
+/** @type {Kepler.LineCollider} */
 let staticLine;
-/** @type {CircleCollider} */
+/** @type {Kepler.CircleCollider} */
 let staticCircle;
-/** @type {PolygonCollider} */
+/** @type {Kepler.PolygonCollider} */
 let staticPolygon;
-/** @type {Collider[]} */
+/** @type {Kepler.Collider[]} */
 let dynamicColliders = [];
-/** @type {Collider} */
+/** @type {Kepler.Collider} */
 let currentDynamicCollider;
 /** @type {number} */
 let dcIndex = 0;
@@ -26,44 +26,49 @@ function preload() {
 /* setup runs once once at runtime start */
 function setup() {
   createCanvas(800, 800);
-  input = KInput.makeNew(window);
+  input = Kepler.Input.makeNew(window);
   input.addAction({
     name: "cycle colliders",
-    keys: [Key.LEFT_MOUSE],
-    mode: PRESS,
+    keys: [Kepler.Key.LEFT_MOUSE],
+    mode: Kepler.PRESS,
     callback: () => {
       dcIndex = (dcIndex + 1) % dynamicColliders.length;
       currentDynamicCollider = dynamicColliders[dcIndex];
     }
   });
 
-  staticPoint = new PointCollider(width / 4, height / 4);
+  staticPoint = new Kepler.PointCollider(width / 4, height / 4);
 
-  staticLine = new LineCollider(
+  staticLine = new Kepler.LineCollider(
     (width * 3 / 4) - 50, (height / 4) - 50,
     (width * 3 / 4) + 50, (height / 4) + 50
   );
 
-  staticCircle = new CircleCollider(width / 4, height * 3 / 4, 75);
+  staticCircle = new Kepler.CircleCollider(width / 4, height * 3 / 4, 75);
 
-  staticPolygon = new PolygonCollider([
-    [0, -114],
-    [96, -52],
-    [96, 52],
-    [0, 114],
-    [-96, 52],
-    [-96, -52]], 
-    width * 3 / 4, height * 3 / 4
-  );
+  staticPolygon = new Kepler.PolygonCollider({
+    points: [
+      [0, -114],
+      [96, -52],
+      [96, 52],
+      [0, 114],
+      [-96, 52],
+      [-96, -52]
+    ], 
+    x: width * 3 / 4,
+    y: height * 3 / 4
+  });
 
-  dynamicColliders[0] = new PointCollider(0, 0);
-  dynamicColliders[1] = new LineCollider(-50, -30, 50, 30);
-  dynamicColliders[2] = new CircleCollider(0, 0, 40);
-  dynamicColliders[3] = new PolygonCollider([
-    [-50, -20],
-    [30, 0],
-    [-20, 40]
-  ]);
+  dynamicColliders[0] = new Kepler.PointCollider(0, 0);
+  dynamicColliders[1] = new Kepler.LineCollider(-50, -30, 50, 30);
+  dynamicColliders[2] = new Kepler.CircleCollider(0, 0, 40);
+  dynamicColliders[3] = new Kepler.PolygonCollider({
+    points: [
+      [-50, -20],
+      [30, 0],
+      [-20, 40]
+    ]
+  });
 
   currentDynamicCollider = dynamicColliders[0];
 
@@ -75,7 +80,12 @@ function setup() {
 function draw() {
   input.update();
 
-  currentDynamicCollider.setPos(mouseX, mouseY);
+  if (dcIndex === 0) {
+    currentDynamicCollider.position.set(mouseX, mouseY);
+  }
+  else {
+    currentDynamicCollider.setPos(mouseX, mouseY);
+  }
   staticPolygon.modAngle(0.01);
 
   background(WHITE);
@@ -133,7 +143,7 @@ function draw() {
   else stroke(GREEN);
   currentDynamicCollider.render();
 
-  if (colliding && hasMTV) {
+  if (colliding && hasMTV && (dcIndex === 2 || dcIndex === 3)) {
     stroke(BLUE);
     currentDynamicCollider.modPos(transVec);
     currentDynamicCollider.render();
