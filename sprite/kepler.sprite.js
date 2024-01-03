@@ -287,7 +287,8 @@
      */
     async #parseSpriteSheet(spriteName, json, img, {position={x:0,y:0},
         anchor={x:Kepler.CENTER,y:Kepler.CENTER}, frameRate=20,
-        playbackMode=Kepler.LOOP, playbackSpeed=1, paused=false}) {
+        playbackMode=Kepler.LOOP, playbackSpeed=1, paused=false,
+        startTag = null}) {
 
       let data = {
         animated: true,
@@ -307,6 +308,7 @@
       data.playbackMode = playbackMode;
 
       let frames = json.frames;
+      let meta = json.meta;
 
       if (Object.keys(frames).length === 0) {
         throw new Error(`Sprite "${spriteName}" has no frames!`);
@@ -373,6 +375,23 @@
           data.frames.push(img.get(f.frame.x, f.frame.y, f.frame.w, f.frame.h));
         }
       }
+
+      // tags are used to separate animations
+      if (meta.frameTags.length === 0) {
+        data.tags = {
+          "main": {start: 0, end: data.frames.length - 1}
+        };
+        data.startTag = "main";
+      }
+      else {
+        data.tags = {};
+        for (let tag of meta.frameTags) {
+          data.tags[tag.name] = {start: tag.from, end: tag.to};
+        }
+
+        data.startTag = startTag || (Object.keys(data.tags))[0];
+      }
+
       this.#spriteData[spriteName] = data;
     }
   }
@@ -531,12 +550,6 @@
 
     /**
      * @private
-     * @type {number}
-     */
-    #numFrames;
-
-    /**
-     * @private
      * @type {Window|p5}
      */
     #sketch;
@@ -553,14 +566,31 @@
      */
     #scale;
 
-    /** @type {p5.Vector} */
-    position;
+    /**
+     * @private
+     * @type {Object[]}
+     */
+    #tags;
 
-    /** @type {p5.Vector} */
-    displayAnchor;
+    /**
+     * @private
+     * @type {string}
+     */
+    #currentTag;
 
-    /** @type {number} */
-    rotation;
+    /**
+     * The first frame in the current tag.
+     * @private
+     * @type {number}
+     */
+    #startIndex;
+
+    /**
+     * The last frame in the current tag.
+     * @private
+     * @type {number}
+     */
+    #endIndex;
 
     /**
      * The time between frames in seconds.
@@ -584,6 +614,15 @@
     /** @type {boolean} */
     paused;
 
+    /** @type {p5.Vector} */
+    position;
+
+    /** @type {p5.Vector} */
+    displayAnchor;
+
+    /** @type {number} */
+    rotation;
+
     /** @type {number} */
     get x() { return this.position.x; }
     set x(value) { this.position.x = value; }
@@ -593,11 +632,11 @@
     set y(value) { this.position.y = value; }
 
     /** @type {number} */
-    get anchorX() { return this.displayAnchor.x }
+    get anchorX() { return this.displayAnchor.x; }
     set anchorX(value) { this.displayAnchor.x = value; }
 
     /** @type {number} */
-    get anchorY() { return this.displayAnchor.y }
+    get anchorY() { return this.displayAnchor.y; }
     set anchorY(value) { this.displayAnchor.y = value; }
 
     /** @type {number} */
@@ -624,6 +663,27 @@
       this.#frameDelay = 1 / value;
     }
 
+    /**
+     * The number of frames in the current animation tag.
+     * @type {number}
+     */
+    get numFrames() { return this.#endIndex - this.#startIndex; }
+
+    /**
+     * An array containing the names of all tags.
+     * @type {string[]}
+     */
+    get tagNames() { return Object.keys(this.#tags); }
+
+    /**
+     * The frame index in the current tag.
+     * @type {number}
+     */
+    get currentFrame() { return this.#frameIndex - this.#startIndex; }
+
+    /** @type {string} */
+    get currentTag() { return this.#currentTag; }
+
     constructor(key, data) {
       if (key !== SPRITE_CONSTRUCTOR_LOCK) {
         throw new Error("AnimatedSprites cannot be instantiated directly - " +
@@ -632,13 +692,16 @@
 
       this.#sketch = data.sketch;
       this.#frames = data.frames;
-      this.#frameIndex = 0;
-      this.#numFrames = data.frames.length;
       this.frameRate = data.frameRate;
       this.#frameTimer = this.#frameDelay;
+
       this.playbackMode = data.playbackMode;
       this.playbackSpeed = data.playbackSpeed;
       this.paused = data.paused;
+
+      this.#tags = data.tags;
+      this.changeTag(data.startTag);
+
       this.position = this.#sketch.createVector(data.position[0],
           data.position[1]);
       this.displayAnchor = this.#sketch.createVector(data.anchor[0],
@@ -655,27 +718,29 @@
     advanceFrame(n) {
       this.#frameIndex += n;
       if (this.playbackMode === Kepler.LOOP) {
-        // someday i'll find a language where the modulus works correctly...
-        this.#frameIndex = (((this.#frameIndex) % this.#numFrames) +
-            this.#numFrames) % this.#numFrames;
+        // overly complicated math to make the frame index always positive,
+        // because apparently having a working modulus operator is impossible
+        this.#frameIndex = ((((this.#frameIndex - this.#startIndex) %
+            this.numFrames) + this.numFrames) % this.numFrames) +
+            this.#startIndex;
       }
       else if (this.playbackMode === Kepler.PING_PONG) {
-        if (this.#frameIndex < 0) {
-          this.#frameIndex = 0;
+        if (this.#frameIndex < this.#startIndex) {
+          this.#frameIndex = this.#startIndex;
           this.playbackSpeed *= -1;
         }
-        else if (this.#frameIndex >= this.#numFrames) {
-          this.#frameIndex = this.#numFrames - 1;
+        else if (this.#frameIndex > this.#endIndex) {
+          this.#frameIndex = this.#endIndex;
           this.playbackSpeed *= -1;
         }
       }
       else {
-        if (this.#frameIndex < 0) {
-          this.#frameIndex = 0;
+        if (this.#frameIndex < this.#startIndex) {
+          this.#frameIndex = this.#startIndex;
           this.paused = true;
         }
-        else if (this.#frameIndex >= this.#numFrames) {
-          this.#frameIndex = this.#numFrames - 1;
+        else if (this.#frameIndex > this.#endIndex) {
+          this.#frameIndex = this.#endIndex;
           this.paused = true;
         }
       }
@@ -688,8 +753,25 @@
      */
     restart(startPaused=false) {
       this.paused = startPaused;
-      if (this.playbackSpeed < 0) this.#frameIndex = this.#numFrames - 1;
-      else this.#frameIndex = 0;
+      if (this.playbackSpeed < 0) this.#frameIndex = this.#endIndex;
+      else this.#frameIndex = this.#startIndex;
+    }
+
+    /**
+     * Changes to the named tag. Names are case-sensitive, and an invalid name
+     * throws an error.
+     * @method
+     * @param {string} tagname
+     */
+    changeTag(tagname) {
+      if (!this.#tags.hasOwnProperty(tagname)) {
+        throw new Error(`The animation tag "${tagname}" does not exist!`);
+      }
+      this.#currentTag = tagname;
+      this.#startIndex = this.#tags[this.#currentTag].start;
+      this.#endIndex = this.#tags[this.#currentTag].end;
+      if (this.playbackSpeed < 0) this.#frameIndex = this.#endIndex;
+      else this.#frameIndex = this.#startIndex;
     }
 
     /**
