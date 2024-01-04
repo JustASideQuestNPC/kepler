@@ -31,7 +31,6 @@ let pbModeIndex = 2;
  */
 const UPSCALE_FACTOR = 10;
 
-/* preload runs once at runtime start */
 function preload() {
   loadJSON("../../extras/color-palette.json", loadPalette);
 
@@ -40,21 +39,19 @@ function preload() {
     {
       name: "animation test",
       path: "sprites/animation-test.json",
-      position: {x: 40, y: 40},
+      position: { x: 40, y: 40 },
       paused: false,
     },
   ]);
 }
 
-/* setup runs once once at runtime start, after preload finishes */
 function setup() {
   createCanvas(800, 800);
   noSmooth();
-   
+
   pg = createGraphics(width / UPSCALE_FACTOR, height / UPSCALE_FACTOR);
 
-  engine = new Kepler.Engine(window);
-  engine.renderTarget = pg;
+  engine = new Kepler.Engine();
   entity = engine.addEntity(new TestEntity(pg.width / 2, pg.height / 2));
   tagNames = entity.sprite.tagNames;
 
@@ -62,37 +59,37 @@ function setup() {
   input.addAction({
     name: "step forward",
     keys: [Kepler.Key.RIGHT],
-    mode: Kepler.PRESS
+    mode: Kepler.PRESS,
   });
   input.addAction({
     name: "step back",
     keys: [Kepler.Key.LEFT],
-    mode: Kepler.PRESS
+    mode: Kepler.PRESS,
   });
   input.addAction({
     name: "pause",
     keys: [Kepler.Key.SPACE],
-    mode: Kepler.PRESS
+    mode: Kepler.PRESS,
   });
   input.addAction({
     name: "restart",
     keys: [Kepler.Key.R],
-    mode: Kepler.PRESS
+    mode: Kepler.PRESS,
   });
   input.addAction({
     name: "tag up",
     keys: [Kepler.Key.UP],
-    mode: Kepler.PRESS
+    mode: Kepler.PRESS,
   });
   input.addAction({
     name: "tag down",
     keys: [Kepler.Key.DOWN],
-    mode: Kepler.PRESS
+    mode: Kepler.PRESS,
   });
   input.addAction({
     name: "cycle playback mode",
     keys: [Kepler.Key.P],
-    mode: Kepler.PRESS
+    mode: Kepler.PRESS,
   });
 
   textAlign(LEFT, TOP);
@@ -100,7 +97,6 @@ function setup() {
   textSize(16);
 }
 
-/* draw runs once per frame */
 function draw() {
   input.update();
   engine.update();
@@ -114,24 +110,26 @@ function draw() {
   let playModeString;
   if (entity.sprite.playbackMode === Kepler.PLAY_ONCE) {
     playModeString = "PLAY_ONCE";
-  }
-  else if (entity.sprite.playbackMode === Kepler.PING_PONG) {
+  } else if (entity.sprite.playbackMode === Kepler.PING_PONG) {
     playModeString = "PING_PONG";
-  }
-  else {
+  } else {
     playModeString = "LOOP";
   }
 
   fill(BLACK);
-  text(`Tag: "${entity.sprite.currentTag}"\n` +
-       `Frame: ${entity.sprite.currentFrame}\n` +
-       `Playback mode: ${playModeString}\n` + 
-       `Paused: ${entity.sprite.paused}\n` +
-       `      to pause/unpause\n` + // spacing to make highlighted text line up
-       `  /     to cycle tags\n` +
-       `  to restart\n` +
-       `  to cycle playback mode`, 5, 5);
-  
+  text(
+    `Tag: "${entity.sprite.currentTag}"\n` +
+      `Frame: ${entity.sprite.currentFrame}\n` +
+      `Playback mode: ${playModeString}\n` +
+      `Paused: ${entity.sprite.paused}\n` +
+      `      to pause/unpause\n` + // spacing to make highlighted text line up
+      `  /     to cycle tags\n` +
+      `  to restart\n` +
+      `  to cycle playback mode`,
+    5,
+    5
+  );
+
   fill(LIGHT_BLUE);
   text("Space", 5, 85);
   text("Up Down", 5, 105);

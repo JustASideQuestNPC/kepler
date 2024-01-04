@@ -1,13 +1,15 @@
 // add engine stuff to the Kepler namespace using a "self-executing anonymous
 // function" and associated black magic
-(function(Kepler) {
+(function (Kepler) {
+  Kepler.ENGINE_INCLUDED = true;
   // reserved entity tags - these are symbols to prevent a user-defined tag from
   // accidentally having the same value
   Kepler.USES_RAW_DELTA_TIME = Symbol();
   Kepler.USES_SCREEN_SPACE_COORDS = Symbol();
 
   /**
-   * Primary game engine class that manages rendering and updates for all entities
+   * Primary game engine class that manages rendering and updates for all
+   * entities.
    * @class
    */
   Kepler.Engine = class {
@@ -22,7 +24,6 @@
      * Any object that the p5 drawing API can be used with.
      * @typedef {(Window | p5 | p5.Graphics | p5.Framebuffer)} Renderable
      */
-
 
     /* simulation vars */
     /**
@@ -103,10 +104,11 @@
     set tickRate(rate) {
       if (rate <= 0) {
         throw new Error("Tick rate cannot be <= 0!");
-      }
-      else if (rate < 60) {
-        console.warn(`Tick rate of ${rate} tps is low and may cause a choppy ` +
-            `simulation (recommended tick rate is at least 50-60).`);
+      } else if (rate < 60) {
+        console.warn(
+          `Tick rate of ${rate} tps is low and may cause a choppy ` +
+            `simulation (recommended tick rate is at least 50-60).`
+        );
       }
       this.#tickRate = rate;
       this.#secondsPerTick = 1 / rate;
@@ -128,7 +130,6 @@
      */
     #secondsPerTick;
 
-
     /* rendering and camera vars */
     /**
      * Where entities are rendered to when the engine's `render` method is
@@ -144,8 +145,10 @@
       this.#screenWidth = rt.width;
       this.#screenHeight = rt.height;
       // changing the render target resets camera settings
-      this.cameraAnchor = createVector(this.#screenWidth / 2,
-                                        this.#screenHeight / 2);
+      this.cameraAnchor = createVector(
+        this.#screenWidth / 2,
+        this.#screenHeight / 2
+      );
       this.cameraPos = this.cameraAnchor;
       this.useCameraBoundary = false;
     }
@@ -181,9 +184,9 @@
      */
     #screenWidth;
     /**
-    * @private
-    * @type {number}
-    */
+     * @private
+     * @type {number}
+     */
     #screenHeight;
 
     /**
@@ -229,8 +232,7 @@
       if (anchor.constructor === Array) {
         this.#cameraOffset.x = -anchor[0];
         this.#cameraOffset.y = -anchor[1];
-      }
-      else {
+      } else {
         this.#cameraOffset.x = -anchor.x;
         this.#cameraOffset.y = -anchor.y;
       }
@@ -287,13 +289,12 @@
     #renderX = 0;
 
     /**
-     * Where the canvas is translating to in the y direction; used for coordinate
-     * conversions.
+     * Where the canvas is translating to in the y direction; used for
+     * coordinate conversions.
      * @private
      * @type {number}
      */
     #renderY = 0;
-
 
     /* world vars */
     /**
@@ -343,22 +344,30 @@
       this.worldHeight = size[1];
     }
 
-
     /**
      * Creates a new KEngine.
      * @constructor
-     * @param {Window | p5} sketch The sketch instance the engine is running in.
-     *    If you're running your code in global mode, this should be `window`.
-     *    If you're running your code in instance mode, this should be the same
-     *    object you're defining `setup` and `draw` for.
+     * @param {Object} [args]
+     * @param {Window | p5} [args.sketch] The sketch instance the engine is
+     *    running in. If you're running your code in global mode, this should be
+     *    `window`. If you're running your code in instance mode, this should be
+     *    the same object you're defining `setup` and `draw` for.
+     * @param {Renderable} [args.renderTarget] The canvas to render entities to.
+     * @param {number} [args.tickRate]
      */
-    constructor(sketch) {
+    constructor({
+      sketch = window,
+      renderTarget = null,
+      tickRate = null,
+    } = {}) {
       this.#sketch = sketch;
-      this.renderTarget = sketch;
-      this.cameraAnchor = createVector(this.#screenWidth / 2,
-                                        this.#screenHeight / 2);
+      this.#renderTarget = renderTarget || sketch;
+      this.cameraAnchor = createVector(
+        this.#screenWidth / 2,
+        this.#screenHeight / 2
+      );
       this.cameraPos = this.cameraAnchor;
-      this.tickRate = sketch.getTargetFrameRate();
+      this.tickRate = tickRate || sketch.getTargetFrameRate();
     }
 
     /**
@@ -374,7 +383,6 @@
       // all entities have a reference to the engine holding them
       entity.engine = this;
       this.#entities.push(entity);
-      // return a reference to the entity in case you want to store it somewhere
       return entity;
     }
 
@@ -386,7 +394,9 @@
     update() {
       // increment the dt counter and stop execution if we don't need to update
       this.#dtCounter += this.#sketch.deltaTime / 1000;
-      if (this.#dtCounter < this.#secondsPerTick) return;
+      if (this.#dtCounter < this.#secondsPerTick) {
+        return;
+      }
 
       this.#lastDt = this.#dtCounter;
       this.#dtCounter = 0;
@@ -396,8 +406,11 @@
       let dt = this.#lastDt * this.deltaTimeMultiplier;
       for (let e of this.#entities) {
         if (!e.markForDelete) {
-          if (e.hasTag(Kepler.USES_RAW_DELTA_TIME)) e.update(this.deltaTimeRaw);
-          else e.update(dt);
+          if (e.hasTag(Kepler.USES_RAW_DELTA_TIME)) {
+            e.update(this.deltaTimeRaw);
+          } else {
+            e.update(dt);
+          }
         }
       }
 
@@ -422,25 +435,30 @@
 
       // apply camera boundary
       if (this.useCameraBoundary) {
-        this.#renderX = this.#sketch.constrain(this.#renderX, 0,
-            this.#maxRenderX);
-        this.#renderY = this.#sketch.constrain(this.#renderY, 0,
-            this.#maxRenderY);
+        this.#renderX = this.#sketch.constrain(
+          this.#renderX,
+          0,
+          this.#maxRenderX
+        );
+        this.#renderY = this.#sketch.constrain(
+          this.#renderY,
+          0,
+          this.#maxRenderY
+        );
       }
 
       this.#renderTarget.push();
       this.#renderTarget.translate(-this.#renderX, -this.#renderY);
-        for (let e of this.#entities) {
-          if (e.hasTag(Kepler.USES_SCREEN_SPACE_COORDS)) {
-            // translate back to (0, 0) and render the entity
-            this.#renderTarget.translate(this.#renderX, this.#renderY);
-            e.render(this.#renderTarget);
-            this.#renderTarget.translate(-this.#renderX, -this.#renderY);
-          }
-          else {
-            e.render(this.#renderTarget);
-          }
+      for (let e of this.#entities) {
+        if (e.hasTag(Kepler.USES_SCREEN_SPACE_COORDS)) {
+          // translate back to (0, 0) and render the entity
+          this.#renderTarget.translate(this.#renderX, this.#renderY);
+          e.render(this.#renderTarget);
+          this.#renderTarget.translate(-this.#renderX, -this.#renderY);
+        } else {
+          e.render(this.#renderTarget);
         }
+      }
       this.#renderTarget.pop();
     }
 
@@ -487,7 +505,7 @@
 
     /**
      * Returns a list containing all entities with the specified tag.
-     * @param {any} tag 
+     * @param {any} tag
      * @returns {Entity[]}
      */
     getTagged(tag) {
@@ -507,11 +525,12 @@
      */
     screenPosToWorldPos(arg1, arg2) {
       if (arg1.constructor === p5.Vector) {
-        return this.#sketch.createVector(arg1.x + this.#renderX,
-            arg1.y + this.#renderY);
-      }
-      else {
-        return [arg1 + this.#renderX, arg2 + this.#renderY]
+        return this.#sketch.createVector(
+          arg1.x + this.#renderX,
+          arg1.y + this.#renderY
+        );
+      } else {
+        return [arg1 + this.#renderX, arg2 + this.#renderY];
       }
     }
 
@@ -528,14 +547,15 @@
      */
     worldPosToScreenPos(arg1, arg2) {
       if (arg1.constructor === p5.Vector) {
-        return this.#sketch.createVector(arg1.x - this.#renderX,
-            arg1.y - this.#renderY);
-      }
-      else {
-        return [arg1 - this.#renderX, arg2 - this.#renderY]
+        return this.#sketch.createVector(
+          arg1.x - this.#renderX,
+          arg1.y - this.#renderY
+        );
+      } else {
+        return [arg1 - this.#renderX, arg2 - this.#renderY];
       }
     }
-  }
+  };
 
   /**
    * Abstract base class that all entities should inherit from.
@@ -546,8 +566,8 @@
      * Tags can be used to indicate what entities are (i.e., a wall) and what
      * they can do (i.e., collide with the player). Entities can have any number
      * of tags or none at all, but it's typically a good idea to at least give
-     * them a tag indicating what they are. 
-     * 
+     * them a tag indicating what they are.
+     *
      * Tags can be whatever you want (strings are typically easiest, but the
      * built-in ones are Symbols), but there are a few built-in tags with
      * reserved names:
@@ -611,9 +631,11 @@
     // can just hack them in anyway :)
     constructor() {
       if (new.target === Kepler.Entity) {
-        throw new Error("Kepler.Entity is an abstract class and cannot " +
-            "be instantiated directly (extend it instead)!");
+        throw new Error(
+          "Kepler.Entity is an abstract class and cannot be instantiated " +
+            "directly (extend it instead)!"
+        );
       }
     }
-  }
-}(window.Kepler = window.Kepler || {}));
+  };
+})((window.Kepler = window.Kepler || {}));

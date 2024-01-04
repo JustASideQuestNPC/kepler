@@ -1,6 +1,7 @@
 // add input stuff to the Kepler namespace using a "self-executing anonymous
 // function" and associated black magic
-(function(Kepler) {
+(function (Kepler) {
+  Kepler.INPUT_INCLUDED = true;
   /**
    * "Enum" with codes for every valid keyboard key and mouse button.
    * @enum {number} Key
@@ -113,25 +114,22 @@
     BACKSLASH: 220,
     CLOSE_BRACKET: 221,
     SINGLE_QUOTE: 222,
-    QUOTE: 222
-  }
+    QUOTE: 222,
+  };
 
   // action activation modes
   Kepler.CONTINUOUS = Symbol();
   Kepler.PRESS = Symbol();
   Kepler.RELEASE = Symbol();
 
+  const CONSTRUCTOR_KEY = Symbol();
+  const VALID_KEY_CODES = Object.values(Kepler.Key);
+
   /**
    * Class that handles the improved (read: useable) input system.
    * @class
    */
   Kepler.Input = class {
-    // used to make the constructor "private" and force the use of
-    // Kepler.Input.makeNew()
-    static #CONSTRUCTOR_KEY = Symbol();
-    static #VALID_KEY_CODES = Object.values(Kepler.Key);
-    
-
     /**
      * Holds whether each keyboard or mouse key is currently pressed.
      * @private
@@ -155,7 +153,7 @@
      *      or button bound to them is pressed.
      *    - `RELEASE` actions are active for a single frame the first time a key
      *      or button bound to them is released.
-     * 
+     *
      *    The default activation mode is `CONTINUOUS`.
      * @property {boolean} chord If true, the action can only activate when
      *    every key or button bound to it is pressed at the same time.
@@ -198,42 +196,43 @@
      * @returns {Input} The Input object created and referenced in the input
      *    listeners.
      */
-    static makeNew(sketch, f12HotkeyEnabled=true) {
+    static makeNew(sketch, f12HotkeyEnabled = true) {
       // use the key to create a new Input without throwing an exception
-      let obj = new Kepler.Input(Kepler.Input.#CONSTRUCTOR_KEY);
+      let obj = new Kepler.Input(CONSTRUCTOR_KEY);
 
       // auto-define any undefined input listeners
       if (typeof sketch.keyPressed !== "function") {
         if (f12HotkeyEnabled) {
           sketch.keyPressed = () => {
             obj.pressKey(sketch.keyCode);
-            if (sketch.keyCode !== Kepler.Key.F12) return false;
-          }
-        }
-        else {
+            if (sketch.keyCode !== Kepler.Key.F12) {
+              return false;
+            }
+          };
+        } else {
           sketch.keyPressed = () => {
             obj.pressKey(sketch.keyCode);
             return false;
-          }
+          };
         }
       }
       if (typeof sketch.keyReleased !== "function") {
         sketch.keyReleased = () => {
           obj.releaseKey(sketch.keyCode);
           return false;
-        }
+        };
       }
       if (typeof sketch.mousePressed !== "function") {
         sketch.mousePressed = () => {
           obj.pressMouse(sketch.mouseButton);
           return false;
-        }
+        };
       }
       if (typeof sketch.mouseReleased !== "function") {
         sketch.mouseReleased = () => {
           obj.releaseMouse(sketch.mouseButton);
           return false;
-        }
+        };
       }
 
       return obj;
@@ -242,13 +241,15 @@
     // constructors can't be private because this is javascript...but this is
     // javascript, so we can just hack one in anyway :)
     constructor(constructorKey) {
-      if (constructorKey !== Kepler.Input.#CONSTRUCTOR_KEY) {
-        throw new Error('Input objects cannot be constructed with "new ' +
-            'Input" - use "Kepler.Input.makeNew" instead!');
+      if (constructorKey !== CONSTRUCTOR_KEY) {
+        throw new Error(
+          'Input objects cannot be constructed with "new Input" - use ' +
+            '"Kepler.Input.makeNew" instead!'
+        );
       }
 
       // populate #keyStates with default values for each key
-      for (let k of Kepler.Input.#VALID_KEY_CODES) {
+      for (let k of VALID_KEY_CODES) {
         this.#keyStates[k] = false;
       }
     }
@@ -264,129 +265,146 @@
      *    The action's activation mode, which determines when it becomes active:
      *    - `CONTINUOUS` actions are active whenever a key or button bound to
      *      them is pressed.
-     *    - `PRESS` actions are active for a single frame the first time a key or
-     *      button bound to them is pressed.
+     *    - `PRESS` actions are active for a single frame the first time a key
+     *      or button bound to them is pressed.
      *    - `RELEASE` actions are active for a single frame the first time a key
      *      or button bound to them is released.
-     * 
+     *
      *    The default activation mode is `CONTINUOUS`.
      * @param {boolean} action.chord If true, the action can only activate when
-     *    every key or button bound to it is pressed at the same time. Otherwise,
-     *    the action can activate whenever at least one key or button bound to it
-     *    is pressed. The default chord setting is `false`.
+     *    every key or button bound to it is pressed at the same time.
+     *    Otherwise, the action can activate whenever at least one key or button
+     *    bound to it is pressed. The default chord setting is `false`.
      * @param {function(): void} action.callback A callback function that runs
      *    automatically on every frame that the action is active. The default
      *    callback does nothing.
      */
-    addAction({name, keys, mode=Kepler.CONTINUOUS, chord=false,
-        callback=(()=>{})}) {
+    addAction({
+      name,
+      keys,
+      mode = Kepler.CONTINUOUS,
+      chord = false,
+      callback = () => {},
+    }) {
       /* do way too many checks so every argument gets a descriptive error
        * if it's invalid (you're welcome) */
 
       // make sure the action has a name and keys (everything else is optional)
-      if (name == null) throw new TypeError("Input actions require a name!");
-      if (keys == null) throw new TypeError(`The input action "${name}" has ` +
-          `no keys or mouse buttons assigned to it!`);
+      if (name == null) {
+        throw new TypeError("Input actions require a name!");
+      }
+      if (keys == null) {
+        throw new TypeError(
+          `The input action "${name}" has no keys or mouse buttons assigned `
+            `to it!`
+        );
+      }
 
       // single keys still need to be in an array
       if (keys.constructor !== Array) {
-        throw new TypeError(`The input action ${name} requires an array of ` +
-            `keys (even if only a single key is bound to it)!`);
+        throw new TypeError(
+          `The input action ${name} requires an array of keys (even if only ` +
+            `a single key is bound to it)!`
+        );
       }
-      if (keys.some((k) => !Kepler.Input.#VALID_KEY_CODES.includes(k))) {
+      if (keys.some((k) => !VALID_KEY_CODES.includes(k))) {
         throw new TypeError(`The input action "${name}" has invalid keys!`);
       }
 
       // make sure the activation mode is valid
-      if (mode !== Kepler.CONTINUOUS && mode !== Kepler.PRESS &&
-          mode !== Kepler.RELEASE) {
-        throw new TypeError(`The input action "${name}" has an invalid ` +
-            `activation mode (Expected Kepler.CONTINOUS, Kepler.PRESS,  or ` + 
-            `Kepler.RELEASE, received "${mode}")!`);
+      if (
+        mode !== Kepler.CONTINUOUS &&
+        mode !== Kepler.PRESS &&
+        mode !== Kepler.RELEASE
+      ) {
+        throw new TypeError(
+          `The input action "${name}" has an invalid activation mode ` +
+            `(Expected Kepler.CONTINOUS, Kepler.PRESS,  or Kepler.RELEASE, ` +
+            `received "${mode}")!`
+        );
       }
 
       // make sure the chord mode is valid
       if (typeof chord !== "boolean") {
-        throw new TypeError(`The input action "${name}" has an invalid chord ` + 
-          `setting (expected true or false, received "${chord}")!`);
+        throw new TypeError(
+          `The input action "${name}" has an invalid chord setting (expected ` +
+            `true or false, received "${chord}")!`
+        );
       }
 
       // make sure the callback is valid
       if (typeof callback !== "function") {
-        throw new TypeError(`The input action "${name}" has an invalid ` +
-          `callback (expected a function, recieved a(n) ${typeof callback})`);
+        throw new TypeError(
+          `The input action "${name}" has an invalid callback (expected a ` +
+            `function, recieved a(n) ${typeof callback})!`
+        );
       }
 
       // overwriting an input won't break anything, but you probably don't want
       // to do it by accident either
       if (this.#inputActions[name] !== undefined) {
-        console.warn(`The input action "${name}" already exists, did you ` +
-            `mean to overwrite it?`);
+        console.warn(
+          `The input action "${name}" already exists, did you mean to ` +
+            `overwrite it?`
+        );
       }
 
-      // create the new action  and give it all of the easy properties
+      // create the new action and give it all of the easy properties
       /** @type {InputAction} */
       let action = {
         active: false,
         keys: keys,
         mode: mode,
         chord: chord,
-        callback: callback
+        callback: callback,
       };
 
       // set boundKeyPressed based on chord mode
       if (action.chord) {
         action.boundKeyPressed = (keyStates) => {
           return action.keys.every((k) => keyStates[k]);
-        }
-      }
-      else {
+        };
+      } else {
         action.boundKeyPressed = (keyStates) => {
           return action.keys.some((k) => keyStates[k]);
-        }
+        };
       }
-      
+
       // set update method based on activation mode
       if (action.mode === Kepler.CONTINUOUS) {
         action.update = (keyStates) => {
           action.active = action.boundKeyPressed(keyStates);
-        }
-      }
-      else if (action.mode === Kepler.PRESS) {
+        };
+      } else if (action.mode === Kepler.PRESS) {
         action.wasActive = false;
         action.update = (keyStates) => {
           if (action.boundKeyPressed(keyStates)) {
             if (action.wasActive) {
               action.active = false;
-            }
-            else {
+            } else {
               action.active = true;
               action.wasActive = true;
             }
-          }
-          else {
+          } else {
             action.active = false;
             action.wasActive = false;
           }
-        }
-      }
-      else {
+        };
+      } else {
         action.wasActive = true;
         action.update = (keyStates) => {
           if (!action.boundKeyPressed(keyStates)) {
             if (action.wasActive) {
               action.active = false;
-            }
-            else {
+            } else {
               action.active = true;
               action.wasActive = true;
             }
-          }
-          else {
+          } else {
             action.active = false;
             action.wasActive = false;
           }
-        }
+        };
       }
 
       // add the action to the action list
@@ -424,7 +442,7 @@
      * @param {Key} code The key or mouse button to check the state of.
      */
     getKeyState(code) {
-      if (!Input.#VALID_KEY_CODES.includes(code)) {
+      if (!VALID_KEY_CODES.includes(code)) {
         throw new Error(`"${code}" is not a valid key or mouse button!`);
       }
       return this.#keyStates[code];
@@ -465,11 +483,9 @@
     pressMouse(button) {
       if (button === "left") {
         this.#keyStates[Kepler.Key.LEFT_MOUSE] = true;
-      }
-      else if (button === "right") {
+      } else if (button === "right") {
         this.#keyStates[Kepler.Key.RIGHT_MOUSE] = true;
-      }
-      else {
+      } else {
         this.#keyStates[Kepler.Key.MIDDLE_MOUSE] = true;
       }
     }
@@ -485,13 +501,11 @@
     releaseMouse(button) {
       if (button === "left") {
         this.#keyStates[Kepler.Key.LEFT_MOUSE] = false;
-      }
-      else if (button === "right") {
+      } else if (button === "right") {
         this.#keyStates[Kepler.Key.RIGHT_MOUSE] = false;
-      }
-      else {
+      } else {
         this.#keyStates[Kepler.Key.MIDDLE_MOUSE] = false;
       }
     }
-  }
-}(window.Kepler = window.Kepler || {}));
+  };
+})((window.Kepler = window.Kepler || {}));
