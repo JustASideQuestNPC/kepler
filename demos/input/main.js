@@ -19,17 +19,17 @@ function setup() {
   input = Kepler.Input.makeNew(window);
   input.addAction({
     name: "spacebar continuous",
-    keys: [Kepler.Key.SPACE]
+    keys: [Kepler.Key.SPACE],
   });
   input.addAction({
     name: "spacebar press",
     keys: [Kepler.Key.SPACE],
-    mode: Kepler.PRESS
+    mode: Kepler.PRESS,
   });
   input.addAction({
     name: "spacebar release",
     keys: [Kepler.Key.SPACE],
-    mode: Kepler.RELEASE
+    mode: Kepler.RELEASE,
   });
   input.addAction({
     name: "multiple keys",
@@ -38,7 +38,7 @@ function setup() {
   input.addAction({
     name: "chord action",
     keys: [Kepler.Key.SHIFT, Kepler.Key.D],
-    chord: true
+    chord: true,
   });
   input.addAction({
     name: "callback counter",
@@ -46,7 +46,7 @@ function setup() {
     mode: Kepler.PRESS,
     callback: () => {
       ++counter;
-    }
+    },
   });
 
   textSize(16);
@@ -69,7 +69,7 @@ function draw() {
 
   setFillColor("multiple keys");
   ellipse(100, 300, 150, 150);
-  
+
   setFillColor("chord action");
   ellipse(300, 300, 150, 150);
 

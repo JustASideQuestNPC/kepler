@@ -16,14 +16,18 @@ let currentDynamicCollider;
 /** @type {number} */
 let dcIndex = 0;
 /** @type {string[]} */
-let colliderNames = ["PointCollider", "LineCollider", "CircleCollider",
-    "PolygonCollider"];
+let colliderNames = [
+  "PointCollider",
+  "LineCollider",
+  "CircleCollider",
+  "PolygonCollider",
+];
 
 function preload() {
   loadJSON("../../extras/color-palette.json", loadPalette);
 }
 
-/* setup runs once once at runtime start */
+
 function setup() {
   createCanvas(800, 800);
   input = Kepler.Input.makeNew(window);
@@ -34,17 +38,19 @@ function setup() {
     callback: () => {
       dcIndex = (dcIndex + 1) % dynamicColliders.length;
       currentDynamicCollider = dynamicColliders[dcIndex];
-    }
+    },
   });
 
   staticPoint = new Kepler.PointCollider(width / 4, height / 4);
 
   staticLine = new Kepler.LineCollider(
-    (width * 3 / 4) - 50, (height / 4) - 50,
-    (width * 3 / 4) + 50, (height / 4) + 50
+    (width * 3) / 4 - 50,
+    height / 4 - 50,
+    (width * 3) / 4 + 50,
+    height / 4 + 50
   );
 
-  staticCircle = new Kepler.CircleCollider(width / 4, height * 3 / 4, 75);
+  staticCircle = new Kepler.CircleCollider(width / 4, (height * 3) / 4, 75);
 
   staticPolygon = new Kepler.PolygonCollider({
     points: [
@@ -53,10 +59,10 @@ function setup() {
       [96, 52],
       [0, 114],
       [-96, 52],
-      [-96, -52]
-    ], 
-    x: width * 3 / 4,
-    y: height * 3 / 4
+      [-96, -52],
+    ],
+    x: (width * 3) / 4,
+    y: (height * 3) / 4,
   });
 
   dynamicColliders[0] = new Kepler.PointCollider(0, 0);
@@ -66,8 +72,8 @@ function setup() {
     points: [
       [-50, -20],
       [30, 0],
-      [-20, 40]
-    ]
+      [-20, 40],
+    ],
   });
 
   currentDynamicCollider = dynamicColliders[0];
@@ -76,14 +82,13 @@ function setup() {
   textAlign(LEFT, TOP);
 }
 
-/* draw runs once per frame */
+
 function draw() {
   input.update();
 
   if (dcIndex === 0) {
     currentDynamicCollider.position.set(mouseX, mouseY);
-  }
-  else {
+  } else {
     currentDynamicCollider.setPos(mouseX, mouseY);
   }
   staticPolygon.modAngle(0.01);
@@ -99,8 +104,7 @@ function draw() {
     stroke(RED);
     colliding = true;
     name = "PointCollider";
-  }
-  else {
+  } else {
     stroke(GREEN);
   }
   staticPoint.render();
@@ -109,8 +113,7 @@ function draw() {
     stroke(RED);
     colliding = true;
     name = "LineCollider";
-  }
-  else {
+  } else {
     stroke(GREEN);
   }
   staticLine.render();
@@ -122,8 +125,7 @@ function draw() {
     colliding = true;
     hasMTV = true;
     name = "CircleCollider";
-  }
-  else {
+  } else {
     stroke(GREEN);
   }
   staticCircle.render();
@@ -133,8 +135,7 @@ function draw() {
     colliding = true;
     hasMTV = true;
     name = "PolygonCollider";
-  }
-  else {
+  } else {
     stroke(GREEN);
   }
   staticPolygon.render();
@@ -154,8 +155,9 @@ function draw() {
   if (colliding) {
     sidebarText += `\nColliding with: ${name}`;
     if (hasMTV && dcIndex !== 0 && dcIndex !== 1) {
-      sidebarText += `\nTranslation vector: ` +
-      `(${Number(transVec.x).toFixed(2)}, ${Number(transVec.y).toFixed(2)})`;
+      sidebarText +=
+        `\nTranslation vector: ` +
+        `(${Number(transVec.x).toFixed(2)}, ${Number(transVec.y).toFixed(2)})`;
     }
   }
 
