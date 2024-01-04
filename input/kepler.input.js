@@ -212,7 +212,7 @@
         if (f12HotkeyEnabled) {
           sketch.keyPressed = () => {
             obj.pressKey(sketch.keyCode);
-            if (sketch.keyCode !== Kepler.Key.F12) {
+            if (sketch.keyCode !== Kepler.Key["f12"]) {
               return false;
             }
           };
@@ -425,7 +425,7 @@
     }
 
     /**
-     * Loads an array of actions from a json file.
+     * Loads multiple actions from a json file.
      * @method
      * @async
      * @param {string} path
@@ -435,7 +435,10 @@
     async loadActionList(path, verboseLogging=true) {
       let startTime;
       if (verboseLogging) {
-        console.log(`%cLoading actions from ${path}`, "color:#30D6FF");
+        console.log(
+          "%cKepler.Input: " + `%cLoading actions from ${path}`,
+            "color:#30D6FF", "color:default"
+        );
         startTime = window.performance.now();
       }
 
@@ -452,21 +455,28 @@
             action.name = name;
             this.addAction(action);
             if (verboseLogging) {
-              console.log(`┃ Loaded action "${name}"`);
+              console.log(
+                "%cKepler.Input: " + `%cLoaded action "${name}"`,
+                  "color: #30D6FF", "color: default"
+              );
             }
           }
 
           if (verboseLogging) {
             let duration = window.performance.now() - startTime;
             console.log(
-              "┗ " + `%cLoaded ${Object.values(json).length} action(s) in ` +
-                `${duration} ms`, "color: #23D18B"
+              "%cKepler.Input: " + `%cLoaded ${Object.values(json).length} ` +
+                `action(s) in ${duration} ms`,
+                "color: #30D6FF", "color: #23D18B"
             );
           }
         },
         // failure callback
         (event) => {
-          console.error(`The action list at "${path}" does not exist!`, event);
+          console.error(
+            "%cKepler.Input: " + `%cThe action list at "${path}" does not ` +
+              `exist!`, "color: #30D6FF", "color: default", event
+          );
         }
       );
     }

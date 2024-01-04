@@ -1,0 +1,30 @@
+{
+  "step forward": {
+    "keys": ["right"],
+    "mode": "press"
+  },
+  "step back": {
+    "keys": ["left"],
+    "mode": "press"
+  },
+  "pause": {
+    "keys": ["space", "pause"],
+    "mode": "press"
+  },
+  "restart": {
+    "keys": ["r"],
+    "mode": "press"
+  },
+  "tag up": {
+    "keys": ["up"],
+    "mode": "press"
+  },
+  "tag down": {
+    "keys": ["down"],
+    "mode": "press"
+  },
+  "cycle playback mode": {
+    "keys": ["p"],
+    "mode": "press"
+  }
+}

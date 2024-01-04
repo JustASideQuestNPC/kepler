@@ -12,7 +12,7 @@ function preload() {
   loadJSON("../../extras/color-palette.json", loadPalette);
 
   input = Kepler.Input.makeNew({ sketch: window });
-  input.loadActionList("actions.json");
+  input.loadActionList("action-list.json");
 }
 
 function setup() {
