@@ -10,40 +10,19 @@ let counter = 0;
 
 function preload() {
   loadJSON("../../extras/color-palette.json", loadPalette);
+
+  input = Kepler.Input.makeNew({ sketch: window });
+  input.loadActionList("action-list.json");
 }
 
 function setup() {
   createCanvas(600, 400);
 
-  // create a manager and add some inputs
-  input = Kepler.Input.makeNew(window);
-  input.addAction({
-    name: "spacebar continuous",
-    keys: [Kepler.Key.SPACE],
-  });
-  input.addAction({
-    name: "spacebar press",
-    keys: [Kepler.Key.SPACE],
-    mode: Kepler.PRESS,
-  });
-  input.addAction({
-    name: "spacebar release",
-    keys: [Kepler.Key.SPACE],
-    mode: Kepler.RELEASE,
-  });
-  input.addAction({
-    name: "multiple keys",
-    keys: [Kepler.Key.A, Kepler.Key.LEFT_MOUSE],
-  });
-  input.addAction({
-    name: "chord action",
-    keys: [Kepler.Key.SHIFT, Kepler.Key.D],
-    chord: true,
-  });
+  // actions with callbacks can't be loaded from json for technical reasons
   input.addAction({
     name: "callback counter",
-    keys: [Kepler.Key.ENTER],
-    mode: Kepler.PRESS,
+    keys: ["enter"],
+    mode: "press",
     callback: () => {
       ++counter;
     },

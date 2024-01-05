@@ -34,15 +34,11 @@ const UPSCALE_FACTOR = 10;
 function preload() {
   loadJSON("../../extras/color-palette.json", loadPalette);
 
-  spriteLoader = new Kepler.SpriteLoader();
-  spriteLoader.preload([
-    {
-      name: "animation test",
-      path: "sprites/animation-test.json",
-      position: { x: 40, y: 40 },
-      paused: false,
-    },
-  ]);
+  input = Kepler.Input.makeNew({ sketch: window });
+  input.loadActionList("action-list.json");
+
+  spriteLoader = new Kepler.SpriteLoader(window);
+  spriteLoader.loadSpriteList("sprite-list.json");
 }
 
 function setup() {
@@ -51,46 +47,12 @@ function setup() {
 
   pg = createGraphics(width / UPSCALE_FACTOR, height / UPSCALE_FACTOR);
 
-  engine = new Kepler.Engine();
+  engine = new Kepler.Engine({
+    sketch: window,
+    renderTarget: pg
+  });
   entity = engine.addEntity(new TestEntity(pg.width / 2, pg.height / 2));
   tagNames = entity.sprite.tagNames;
-
-  input = Kepler.Input.makeNew(window);
-  input.addAction({
-    name: "step forward",
-    keys: [Kepler.Key.RIGHT],
-    mode: Kepler.PRESS,
-  });
-  input.addAction({
-    name: "step back",
-    keys: [Kepler.Key.LEFT],
-    mode: Kepler.PRESS,
-  });
-  input.addAction({
-    name: "pause",
-    keys: [Kepler.Key.SPACE],
-    mode: Kepler.PRESS,
-  });
-  input.addAction({
-    name: "restart",
-    keys: [Kepler.Key.R],
-    mode: Kepler.PRESS,
-  });
-  input.addAction({
-    name: "tag up",
-    keys: [Kepler.Key.UP],
-    mode: Kepler.PRESS,
-  });
-  input.addAction({
-    name: "tag down",
-    keys: [Kepler.Key.DOWN],
-    mode: Kepler.PRESS,
-  });
-  input.addAction({
-    name: "cycle playback mode",
-    keys: [Kepler.Key.P],
-    mode: Kepler.PRESS,
-  });
 
   textAlign(LEFT, TOP);
   textFont("monospace");

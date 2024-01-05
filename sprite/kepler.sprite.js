@@ -42,12 +42,12 @@
     /**
      * Creates a new KSpriteLoader.
      * @constructor
-     * @param {Window|p5} [sketch] The sketch object to use for creating sprites
+     * @param {Window|p5} sketch The sketch object to use for creating sprites
      *    and loading images. If you're running things in global mode, don't
      *    pass anything here (if you want to pass something anyway, pass
      *    `window`).
      */
-    constructor(sketch = window) {
+    constructor(sketch) {
       this.#sketch = sketch;
     }
 
@@ -116,70 +116,120 @@
     }
 
     /**
-     * Loads an array of images or animation data files into the internal cache,
-     * and breaks up spritesheets into objects that can be used for displaying
-     * animations. This should be called once in your sketch's `preload`
-     * function with every image/animation you plan to use.
+     * Loads an image or animation data file into the internal cache, and breaks
+     * up spritesheets into objects that can be used for displaying animations
+     * This should be called in your sketch's `preload` function.
      * @async
      * @method
-     * @param {string|Object} files A list of the paths to each image (for
-     * sprites that are a single image) or .json data file (for sprites that
-     * have one or more animations) to preload. Objects can be used instead of
-     * strings to set other data such as the sprite's name, display anchor,
-     * rotation, etc.
+     * @param {string|Object} file The path to the image (for sprites that are a
+     * single image) or .json data file (for sprites that have one or more
+     * animations) to load. Objects can be used instead of strings to set other
+     * data such as the sprite's name, display anchor, rotation, etc.
      */
-    async preload(files) {
-      for (let entry of files) {
-        let spriteName, extension;
+    async loadSprite(file) {
+      let spriteName, extension;
 
-        // if the entry is just a file path, convert it to an argument object
-        // that can be passed to a loader
-        let args;
-        if (typeof entry === "string") {
-          args = { path: entry };
-          let buffer = entry;
+      // if the entry is just a file path, convert it to an argument object
+      // that can be passed to a loader
+      let args;
+      if (typeof file === "string") {
+        args = { path: file };
+        let buffer = file;
+        // the file name minus the path
+        spriteName = buffer.split("/").pop();
+        // the path minus the file name; used for loading json files
+        args.folderPath = buffer.join("/") + "/";
+        // remove the file extension using the arcane runes (read: regex)
+        spriteName = spriteName.replace(/\.[^/.]+$/, "");
+
+        extension = entry.slice(((file.lastIndexOf(".") - 1) >>> 0) + 2);
+      } else {
+        args = file;
+        if (file.hasOwnProperty("name")) {
+          spriteName = file.name;
+        } else {
           // the file name minus the path
-          spriteName = buffer.split("/").pop();
-          // the path minus the file name; used for loading json files
-          args.folderPath = buffer.join("/") + "/";
+          spriteName = file.path.split("/").pop();
           // remove the file extension using the arcane runes (read: regex)
           spriteName = spriteName.replace(/\.[^/.]+$/, "");
-
-          extension = entry.slice(((entry.lastIndexOf(".") - 1) >>> 0) + 2);
-        } else {
-          args = entry;
-          if (entry.hasOwnProperty("name")) {
-            spriteName = entry.name;
-          } else {
-            // the file name minus the path
-            spriteName = entry.path.split("/").pop();
-            // remove the file extension using the arcane runes (read: regex)
-            spriteName = spriteName.replace(/\.[^/.]+$/, "");
-          }
-          // the path minus the file name; used for loading json files
-          let buffer = entry.path.split("/");
-          buffer.pop();
-          args.folderPath = buffer.join("/") + "/";
-          extension = entry.path.slice(
-            ((entry.path.lastIndexOf(".") - 1) >>> 0) + 2
-          );
         }
-
-        // delegate to the correct loader (or throw an error) - the loader
-        // methods are defined as async for technical reasons so they all need
-        // to be awaited
-        if (extension === "png" || extension === "jpg") {
-          await this.#loadImageSprite(spriteName, args);
-        } else if (extension === "json") {
-          await this.#loadAnimatedSprite(spriteName, args);
-        } else {
-          throw new Error(
-            `The file "${args.path}" has an invalid file type! ` +
-              `(Supported file types are .json for animated sprites, and ` +
-              `.png or .jpg for image sprites)`
-          );
-        }
+        // the path minus the file name; used for loading json files
+        let buffer = file.path.split("/");
+        buffer.pop();
+        args.folderPath = buffer.join("/") + "/";
+        extension = file.path.slice(
+          ((file.path.lastIndexOf(".") - 1) >>> 0) + 2
+        );
       }
+
+      // delegate to the correct loader (or throw an error) - the loader
+      // methods are defined as async for technical reasons so they all need
+      // to be awaited
+      if (extension === "png" || extension === "jpg") {
+        await this.#loadImageSprite(spriteName, args);
+      } else if (extension === "json") {
+        await this.#loadAnimatedSprite(spriteName, args);
+      } else {
+        throw new Error(
+          `The file "${args.path}" has an invalid file type! ` +
+            `(Supported file types are .json for animated sprites, and ` +
+            `.png or .jpg for image sprites)`
+        );
+      }
+    }
+
+    /**
+     * Loads multiple sprites from a json file.
+     * @method
+     * @async
+     * @param {string} path
+     * @param {boolean} [verboseLogging] If `true`, prints status updates to the
+     *    console. Does nothing in the minified version of the library.
+     */
+    async loadSpriteList(path, verboseLogging = true) {
+      let startTime;
+      if (verboseLogging) {
+        console.log(
+          "%cKepler.SpriteLoader: " + `%cLoading sprites from ${path}`,
+            "color: #d45eff", "color: default"
+        );
+        startTime = window.performance.now();
+      }
+
+      await this.#sketch.loadJSON(
+        path,
+        // success callback
+        (json) => {
+          // the root of a json file can only be an object or an array
+          if (json.constructor === Array) {
+            throw new Error("Sprite list must be an object!");
+          }
+
+          for (let [name, sprite] of Object.entries(json)) {
+            sprite.name = name;
+            this.loadSprite(sprite);
+            if (verboseLogging) {
+              console.log(
+                "%cKepler.SpriteLoader: " + `%cLoaded sprite "${name}"`,
+                  "color: #d45eff", "color: default"
+              );
+            }
+          }
+
+          if (verboseLogging) {
+            let duration = window.performance.now() - startTime;
+            console.log(
+              "%cKepler.SpriteLoader: " + `%cLoaded ` +
+                `${Object.values(json).length} sprite(s) in ${duration} ms`,
+                "color: #d45eff", "color: #23D18B"
+            );
+          }
+        },
+        // failure callback
+        (event) => {
+          console.error(`The sprite list at "${path}" does not exist!`, event);
+        }
+      );
     }
 
     /**

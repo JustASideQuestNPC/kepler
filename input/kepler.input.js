@@ -3,127 +3,119 @@
 (function (Kepler) {
   Kepler.INPUT_INCLUDED = true;
   /**
-   * "Enum" with codes for every valid keyboard key and mouse button.
+   * codes for every valid keyboard key and mouse button.
    * @enum {number} Key
    */
   Kepler.Key = {
-    LEFT_MOUSE: 0,
-    RIGHT_MOUSE: 1,
-    MIDDLE_MOUSE: 2,
-    BACKSPACE: 8,
-    TAB: 9,
-    ENTER: 13,
-    SHIFT: 16,
-    CONTROL: 17,
-    CTRL: 17,
-    ALT: 18,
-    PAUSE: 19,
-    CAPS_LOCK: 20,
-    ESCAPE: 27,
-    SPACEBAR: 32,
-    SPACE: 32,
-    PAGE_UP: 33,
-    PAGE_DOWN: 34,
-    END: 35,
-    HOME: 36,
-    LEFT_ARROW: 37,
-    LEFT: 37,
-    UP_ARROW: 38,
-    UP: 38,
-    RIGHT_ARROW: 39,
-    RIGHT: 39,
-    DOWN_ARROW: 40,
-    DOWN: 40,
-    INSERT: 45,
-    DELETE: 46,
-    ZERO: 48,
-    ONE: 49,
-    TWO: 50,
-    THREE: 51,
-    FOUR: 52,
-    FIVE: 53,
-    SIX: 54,
-    SEVEN: 55,
-    EIGHT: 56,
-    NINE: 57,
-    SEMICOLON: 59,
-    EQUALS: 61,
-    A: 65,
-    B: 66,
-    C: 67,
-    D: 68,
-    E: 69,
-    F: 70,
-    G: 71,
-    H: 72,
-    I: 73,
-    J: 74,
-    K: 75,
-    L: 76,
-    M: 77,
-    N: 78,
-    O: 79,
-    P: 80,
-    Q: 81,
-    R: 82,
-    S: 83,
-    T: 84,
-    U: 85,
-    V: 86,
-    W: 87,
-    X: 88,
-    Y: 89,
-    Z: 90,
-    NUMPAD_ZERO: 96,
-    NUMPAD_ONE: 97,
-    NUMPAD_TWO: 98,
-    NUMPAD_THREE: 99,
-    NUMPAD_FOUR: 100,
-    NUMPAD_FIVE: 101,
-    NUMPAD_SIX: 102,
-    NUMPAD_SEVEN: 103,
-    NUMPAD_EIGHT: 104,
-    NUMPAD_NINE: 105,
-    NUMPAD_MULTIPLY: 106,
-    NUMPAD_ADD: 107,
-    NUMPAD_COMMA: 108,
-    NUMPAD_SUBTRACT: 109,
-    NUMPAD_DECIMAL: 110,
-    NUMPAD_DIVIDE: 111,
-    F1: 112,
-    F2: 113,
-    F3: 114,
-    F4: 115,
-    F5: 116,
-    F6: 117,
-    F7: 118,
-    F8: 119,
-    F9: 120,
-    F10: 121,
-    F11: 122,
-    F12: 123,
-    NUM_LOCK: 144,
-    SCROLL_LOCK: 145,
-    DASH: 173,
-    MINUS: 173,
-    COMMA: 188,
-    PERIOD: 190,
-    SLASH: 191,
-    BACKTICK: 192,
-    OPEN_BRACKET: 219,
-    BACKSLASH: 220,
-    CLOSE_BRACKET: 221,
-    SINGLE_QUOTE: 222,
-    QUOTE: 222,
+    "left mouse": 0,
+    "right mouse": 1,
+    "middle mouse": 2,
+    "backspace": 8,
+    "tab": 9,
+    "enter": 13,
+    "shift": 16,
+    "control": 17,
+    "alt": 18,
+    "pause": 19,
+    "caps lock": 20,
+    "escape": 27,
+    "spacebar": 32,
+    "space": 32,
+    " ": 32,
+    "page up": 33,
+    "page down": 34,
+    "end": 35,
+    "home": 36,
+    "left arrow": 37,
+    "left": 37,
+    "up arrow": 38,
+    "up": 38,
+    "right arrow": 39,
+    "right": 39,
+    "down arrow": 40,
+    "down": 40,
+    "insert": 45,
+    "delete": 46,
+    "0": 48,
+    "1": 49,
+    "2": 50,
+    "3": 51,
+    "4": 52,
+    "6": 54,
+    "7": 55,
+    "8": 56,
+    "9": 57,
+    ";": 59,
+    "=": 61,
+    "a": 65,
+    "b": 66,
+    "c": 67,
+    "d": 68,
+    "e": 69,
+    "f": 70,
+    "g": 71,
+    "h": 72,
+    "i": 73,
+    "j": 74,
+    "k": 75,
+    "l": 76,
+    "m": 77,
+    "n": 78,
+    "o": 79,
+    "p": 80,
+    "q": 81,
+    "r": 82,
+    "s": 83,
+    "t": 84,
+    "u": 85,
+    "v": 86,
+    "w": 87,
+    "x": 88,
+    "y": 89,
+    "z": 90,
+    "numpad 0": 96,
+    "numpad 1": 97,
+    "numpad 2": 98,
+    "numpad 3": 99,
+    "numpad 4": 100,
+    "numpad 5": 101,
+    "numpad 6": 102,
+    "numpad 7": 103,
+    "numpad 8": 104,
+    "numpad 9": 105,
+    "numpad *": 106,
+    "numpad +": 107,
+    "numpad ,": 108,
+    "numpad -": 109,
+    "numpad .": 110,
+    "numpad /": 111,
+    "f1": 112,
+    "f2": 113,
+    "f3": 114,
+    "f4": 115,
+    "f5": 116,
+    "f6": 117,
+    "f7": 118,
+    "f8": 119,
+    "f9": 120,
+    "f10": 121,
+    "f11": 122,
+    "f12": 123,
+    "num lock": 144,
+    "scroll lock": 145,
+    "-": 173,
+    ",": 188,
+    ".": 190,
+    "/": 191,
+    "`": 192,
+    "[": 219,
+    "\\": 220,
+    "]": 221,
+    "'": 222,
   };
 
-  // action activation modes
-  Kepler.CONTINUOUS = Symbol();
-  Kepler.PRESS = Symbol();
-  Kepler.RELEASE = Symbol();
-
   const CONSTRUCTOR_KEY = Symbol();
-  const VALID_KEY_CODES = Object.values(Kepler.Key);
+  const VALID_KEY_CODES = Object.keys(Kepler.Key);
 
   /**
    * Class that handles the improved (read: useable) input system.
@@ -138,6 +130,13 @@
     #keyStates = [];
 
     /**
+     * The sketch containing the instance.
+     * @private
+     * @type {Window | p5}
+     */
+    #sketch;
+
+    /**
      * Holds data for an action that can be bound to multiple keys and/or mouse
      * buttons.
      * @typedef InputAction
@@ -145,16 +144,16 @@
      *    not.
      * @property {Key[]} keys All keys and/or mouse buttons that can activate
      *    the action.
-     * @property {(Kepler.CONTINUOUS|Kepler.PRESS|Kepler.RELEASE)} mode
+     * @property {("continuous" | "press" | "release")} mode
      *    Determines when the action becomes active:
-     *    - `CONTINUOUS` actions are active whenever a key or button bound to
+     *    - `"continuous"` actions are active whenever a key or button bound to
      *      them is pressed.
-     *    - `PRESS` actions are active for a single frame the first time a key
+     *    - `"press"` actions are active for a single frame the first time a key
      *      or button bound to them is pressed.
-     *    - `RELEASE` actions are active for a single frame the first time a key
-     *      or button bound to them is released.
+     *    - `"release"` actions are active for a single frame the first time a
+     *      key or button bound to them is released.
      *
-     *    The default activation mode is `CONTINUOUS`.
+     *    The default activation mode is `"continuous"`.
      * @property {boolean} chord If true, the action can only activate when
      *    every key or button bound to it is pressed at the same time.
      *    Otherwise, the action can activate whenever at least one key or button
@@ -186,26 +185,34 @@
      * defined. Use this to create Input objects, **not** `new Input()`!
      * @static
      * @method
-     * @param {Window | p5} sketch The sketch instance to define input listeners
-     *    for. If you're running your code in **global mode**, this should be
-     *    `window`. If you're running your code in **instance mode**, this
-     *    should be the same object you're defining `setup` and `draw` for.
-     * @param {boolean} [f12HotkeyEnabled] If `true`, the auto-defined
+     * @param {Object} args
+     * @param {Window | p5} args.sketch The sketch instance to define input
+     *    listeners for. If you're running your code in global mode, this should
+     *    be `window`. If you're running your code in instance mode, this should
+     *    be the sketch object you're defining `setup` and `draw` for.
+     * @param {boolean} [args.f12HotkeyEnabled] If `true`, the auto-defined
      *    `keyPressed` function will still allow F12 to open the debug console
      *    in your browser. The default value is `true`.
-     * @returns {Input} The Input object created and referenced in the input
-     *    listeners.
+     * @returns {Kepler.Input} The Input object created and referenced in the 
+     *    input listeners.
      */
-    static makeNew(sketch, f12HotkeyEnabled = true) {
-      // use the key to create a new Input without throwing an exception
-      let obj = new Kepler.Input(CONSTRUCTOR_KEY);
+    static makeNew({sketch, f12HotkeyEnabled = true} = {}) {
+      if (sketch == null) {
+        throw new Error(
+            "Kepler.Input.makeNew() requires a sketch! (if you're running " +
+              'in global mode, use "window")'
+        );
+      }
+
+      // use the key to create a new Input without throwing an error
+      let obj = new Kepler.Input(CONSTRUCTOR_KEY, sketch);
 
       // auto-define any undefined input listeners
       if (typeof sketch.keyPressed !== "function") {
         if (f12HotkeyEnabled) {
           sketch.keyPressed = () => {
             obj.pressKey(sketch.keyCode);
-            if (sketch.keyCode !== Kepler.Key.F12) {
+            if (sketch.keyCode !== Kepler.Key["f12"]) {
               return false;
             }
           };
@@ -240,13 +247,15 @@
 
     // constructors can't be private because this is javascript...but this is
     // javascript, so we can just hack one in anyway :)
-    constructor(constructorKey) {
+    constructor(constructorKey, sketch) {
       if (constructorKey !== CONSTRUCTOR_KEY) {
         throw new Error(
           'Input objects cannot be constructed with "new Input" - use ' +
             '"Kepler.Input.makeNew" instead!'
         );
       }
+
+      this.#sketch = sketch;
 
       // populate #keyStates with default values for each key
       for (let k of VALID_KEY_CODES) {
@@ -256,39 +265,36 @@
 
     /**
      * Adds a named action to the manager.
-     * @param {Object} action A config object with information about the action.
-     * @param {string} action.name The name of the action.
-     * @param {Key[]} action.keys All keys and/or mouse buttons that can
+     * @param {Object} args
+     * @param {string} args.name The name of the action.
+     * @param {Key[]} args.keys All keys and/or mouse buttons that can
      *    activate the action. Can be a single value instead of an array if only
      *    one key/button is bound to the action.
-     * @param {(Kepler.CONTINUOUS|Kepler.PRESS|Kepler.RELEASE)} [action.mode]
-     *    The action's activation mode, which determines when it becomes active:
-     *    - `CONTINUOUS` actions are active whenever a key or button bound to
+     * @param {("continuous" | "press" | "release")} [args.mode]
+     *    Determines when the action becomes active:
+     *    - `"continuous"` actions are active whenever a key or button bound to
      *      them is pressed.
-     *    - `PRESS` actions are active for a single frame the first time a key
+     *    - `"press"` actions are active for a single frame the first time a key
      *      or button bound to them is pressed.
-     *    - `RELEASE` actions are active for a single frame the first time a key
-     *      or button bound to them is released.
+     *    - `"release"` actions are active for a single frame the first time a
+     *      key or button bound to them is released.
      *
-     *    The default activation mode is `CONTINUOUS`.
-     * @param {boolean} action.chord If true, the action can only activate when
+     *    The default activation mode is `"continuous"`.
+     * @param {boolean} args.chord If true, the action can only activate when
      *    every key or button bound to it is pressed at the same time.
      *    Otherwise, the action can activate whenever at least one key or button
      *    bound to it is pressed. The default chord setting is `false`.
-     * @param {function(): void} action.callback A callback function that runs
+     * @param {function(): void} args.callback A callback function that runs
      *    automatically on every frame that the action is active. The default
      *    callback does nothing.
      */
     addAction({
       name,
       keys,
-      mode = Kepler.CONTINUOUS,
+      mode = "continuous",
       chord = false,
       callback = () => {},
     }) {
-      /* do way too many checks so every argument gets a descriptive error
-       * if it's invalid (you're welcome) */
-
       // make sure the action has a name and keys (everything else is optional)
       if (name == null) {
         throw new TypeError("Input actions require a name!");
@@ -303,23 +309,28 @@
       // single keys still need to be in an array
       if (keys.constructor !== Array) {
         throw new TypeError(
-          `The input action ${name} requires an array of keys (even if only ` +
-            `a single key is bound to it)!`
+          `The input action "${name}" requires an array of keys (even if ` +
+            `only oa single key is bound to it)!`
         );
       }
-      if (keys.some((k) => !VALID_KEY_CODES.includes(k))) {
+      if (keys.length === 0) {
+        throw new Error(
+          `The input action "${name}" has no keys assigned to it!`
+        );
+      }
+      if (keys.some((k) => !Kepler.Key.hasOwnProperty(k))) {
         throw new TypeError(`The input action "${name}" has invalid keys!`);
       }
 
       // make sure the activation mode is valid
       if (
-        mode !== Kepler.CONTINUOUS &&
-        mode !== Kepler.PRESS &&
-        mode !== Kepler.RELEASE
+        mode !== "continuous" &&
+        mode !== "press" &&
+        mode !== "release"
       ) {
         throw new TypeError(
           `The input action "${name}" has an invalid activation mode ` +
-            `(Expected Kepler.CONTINOUS, Kepler.PRESS,  or Kepler.RELEASE, ` +
+            `(Expected "continuous", "press",  or "release", ` +
             `received "${mode}")!`
         );
       }
@@ -353,11 +364,13 @@
       /** @type {InputAction} */
       let action = {
         active: false,
-        keys: keys,
         mode: mode,
         chord: chord,
         callback: callback,
       };
+      
+      // convert keys from strings
+      action.keys = Array.from(keys, (k) => Kepler.Key[k]);
 
       // set boundKeyPressed based on chord mode
       if (action.chord) {
@@ -371,11 +384,11 @@
       }
 
       // set update method based on activation mode
-      if (action.mode === Kepler.CONTINUOUS) {
+      if (action.mode === "continuous") {
         action.update = (keyStates) => {
           action.active = action.boundKeyPressed(keyStates);
         };
-      } else if (action.mode === Kepler.PRESS) {
+      } else if (action.mode === "press") {
         action.wasActive = false;
         action.update = (keyStates) => {
           if (action.boundKeyPressed(keyStates)) {
@@ -412,6 +425,63 @@
     }
 
     /**
+     * Loads multiple actions from a json file.
+     * @method
+     * @async
+     * @param {string} path
+     * @param {boolean} [verboseLogging] If `true`, prints status updates to the
+     *    console. Does nothing in the minified version of the library.
+     */
+    async loadActionList(path, verboseLogging=true) {
+      let startTime;
+      if (verboseLogging) {
+        console.log(
+          "%cKepler.Input: " + `%cLoading actions from ${path}`,
+            "color:#30D6FF", "color:default"
+        );
+        startTime = window.performance.now();
+      }
+
+      await this.#sketch.loadJSON(
+        path,
+        // success callback
+        (json) => {
+          // the root of a json file can only be an object or an array
+          if (json.constructor === Array) {
+            throw new Error("Action list must be an object!");
+          }
+
+          for (let [name, action] of Object.entries(json)) {
+            action.name = name;
+            this.addAction(action);
+            if (verboseLogging) {
+              console.log(
+                "%cKepler.Input: " + `%cLoaded action "${name}"`,
+                  "color: #30D6FF", "color: default"
+              );
+            }
+          }
+
+          if (verboseLogging) {
+            let duration = window.performance.now() - startTime;
+            console.log(
+              "%cKepler.Input: " + `%cLoaded ${Object.values(json).length} ` +
+                `action(s) in ${duration} ms`,
+                "color: #30D6FF", "color: #23D18B"
+            );
+          }
+        },
+        // failure callback
+        (event) => {
+          console.error(
+            "%cKepler.Input: " + `%cThe action list at "${path}" does not ` +
+              `exist!`, "color: #30D6FF", "color: default", event
+          );
+        }
+      );
+    }
+
+    /**
      * Updates all actions - call this once at the top of your `draw` loop.
      * @method
      */
@@ -439,13 +509,13 @@
     /**
      * Returns whether a key or mouse button is pressed.
      * @method
-     * @param {Key} code The key or mouse button to check the state of.
+     * @param {string} key The key or mouse button to check the state of.
      */
-    getKeyState(code) {
-      if (!VALID_KEY_CODES.includes(code)) {
-        throw new Error(`"${code}" is not a valid key or mouse button!`);
+    getKeyState(key) {
+      if (Kepler.Key.hasOwnProperty(key)) {
+        return this.#keyStates[key];
       }
-      return this.#keyStates[code];
+      throw new Error(`"${key}" is not a valid key or mouse button!`);
     }
 
     /**
@@ -482,11 +552,11 @@
      */
     pressMouse(button) {
       if (button === "left") {
-        this.#keyStates[Kepler.Key.LEFT_MOUSE] = true;
+        this.#keyStates[Kepler.Key["left mouse"]] = true;
       } else if (button === "right") {
-        this.#keyStates[Kepler.Key.RIGHT_MOUSE] = true;
+        this.#keyStates[Kepler.Key["right mouse"]] = true;
       } else {
-        this.#keyStates[Kepler.Key.MIDDLE_MOUSE] = true;
+        this.#keyStates[Kepler.Key["middle mouse"]] = true;
       }
     }
 
@@ -500,11 +570,11 @@
      */
     releaseMouse(button) {
       if (button === "left") {
-        this.#keyStates[Kepler.Key.LEFT_MOUSE] = false;
+        this.#keyStates[Kepler.Key["left mouse"]] = false;
       } else if (button === "right") {
-        this.#keyStates[Kepler.Key.RIGHT_MOUSE] = false;
+        this.#keyStates[Kepler.Key["right mouse"]] = false;
       } else {
-        this.#keyStates[Kepler.Key.MIDDLE_MOUSE] = false;
+        this.#keyStates[Kepler.Key["middle mouse"]] = false;
       }
     }
   };

@@ -348,7 +348,7 @@
      * Creates a new KEngine.
      * @constructor
      * @param {Object} [args]
-     * @param {Window | p5} [args.sketch] The sketch instance the engine is
+     * @param {Window | p5} args.sketch The sketch instance the engine is
      *    running in. If you're running your code in global mode, this should be
      *    `window`. If you're running your code in instance mode, this should be
      *    the same object you're defining `setup` and `draw` for.
@@ -356,10 +356,17 @@
      * @param {number} [args.tickRate]
      */
     constructor({
-      sketch = window,
+      sketch,
       renderTarget = null,
       tickRate = null,
     } = {}) {
+      if (sketch == null) {
+        throw new Error(
+          "Kepler.Engine requires a sketch! (if you're running in global " +
+            'mode, use "window")'
+      );
+      }
+
       this.#sketch = sketch;
       this.#renderTarget = renderTarget || sketch;
       this.cameraAnchor = createVector(

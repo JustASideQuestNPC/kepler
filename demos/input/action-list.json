@@ -1,0 +1,20 @@
+{
+  "spacebar continuous": {
+    "keys": ["space"]
+  },
+  "spacebar press": {
+    "keys": ["space"],
+    "mode": "press"
+  },
+  "spacebar release": {
+    "keys": ["space"],
+    "mode": "release"
+  },
+  "multiple keys": {
+    "keys": ["a", "left mouse"]
+  },
+  "chord action": {
+    "keys": ["shift", "d"],
+    "chord": true
+  }
+}

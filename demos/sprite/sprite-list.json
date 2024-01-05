@@ -1,0 +1,7 @@
+{
+  "animation test": {
+    "path": "sprites/animation-test.json",
+    "position": { "x": 40, "y": 40 },
+    "paused": false
+  }
+}
