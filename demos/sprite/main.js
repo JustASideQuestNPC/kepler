@@ -117,7 +117,7 @@ class TestEntity extends Kepler.Entity {
   position;
 
   /** @type {Kepler.AnimatedSprite} */
-  sprite;
+  sprite = spriteLoader.makeAnimatedSprite("animation test");
 
   /**
    * @constructor
@@ -127,7 +127,7 @@ class TestEntity extends Kepler.Entity {
   constructor(x, y) {
     super();
     this.position = createVector(x, y);
-    this.sprite = spriteLoader.makeAnimatedSprite("animation test");
+    //this.sprite = spriteLoader.makeAnimatedSprite("animation test");
   }
 
   /** @override */

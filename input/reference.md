@@ -1,27 +1,27 @@
-# KInput Reference
+# kepler.input Reference
 ***Note:** This is a language reference, not a tutorial. For a tutorial, see the
 readme.*
 
 # Contents:
-- **[Kepler.Input:](#keplerinput)** Main class that manages the input system.
+- [**Kepler.Input:**](#keplerinput) Main class that manages the input system.
 
 # Kepler.Input
 ## Description
 A class that handles inputs for an entire sketch.
 
 ## Static Methods
-- [**makeNew()**](#makenew)
+- [`makeNew()`](#makenew)
 
 ## Instance Methods
-- [**addAction()**](#addaction)
-- [**loadActionList()**](#loadactionlist)
-- [**update()**](#update)
-- [**isActive()**](#isactive)
-- [**getKeyState()**](#getkeystate)
-- [**pressKey()**](#presskey)
-- [**releaseKey()**](#releasekey)
-- [**pressMouse()**](#pressmouse)
-- [**releaseMouse()**](#releasemouse)
+- [`addAction()`](#addaction)
+- [`loadActionList()`](#loadactionlist)
+- [`update()`](#update)
+- [`isActive()`](#isactive)
+- [`getKeyState()`](#getkeystate)
+- [`pressKey()`](#presskey)
+- [`releaseKey()`](#releasekey)
+- [`pressMouse()`](#pressmouse)
+- [`releaseMouse()`](#releasemouse)
 
 
 ### makeNew()

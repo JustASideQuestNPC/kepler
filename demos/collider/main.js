@@ -30,11 +30,11 @@ function preload() {
 
 function setup() {
   createCanvas(800, 800);
-  input = Kepler.Input.makeNew(window);
+  input = Kepler.Input.makeNew({ sketch: window });
   input.addAction({
     name: "cycle colliders",
-    keys: [Kepler.Key.LEFT_MOUSE],
-    mode: Kepler.PRESS,
+    keys: ["left mouse"],
+    mode: "press",
     callback: () => {
       dcIndex = (dcIndex + 1) % dynamicColliders.length;
       currentDynamicCollider = dynamicColliders[dcIndex];
