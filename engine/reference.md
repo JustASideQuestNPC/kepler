@@ -13,11 +13,11 @@ readme.*
 A class that handles rendering and updates for all entities.
 
 ## Fields
-- `numEntities`: (constant `number`) The number of entities currently being
+- `numEntities`: (readonly `number`) The number of entities currently being
   managed by the engine.
-- `deltaTimeRaw`: (constant `number`) The time between the last 2 ticks, in
+- `deltaTimeRaw`: (readonly `number`) The time between the last 2 ticks, in
   seconds.
-- `deltaTime`: (constant `number`) The time between the last 2 ticks, in
+- `deltaTime`: (readonly `number`) The time between the last 2 ticks, in
   seconds, multiplied by `deltaTimeMultiplier`.
 - `deltaTimeMultiplier`: (`number`) The current delta time multiplier or "speed
   of time". When entities are updated, their `update()` method is passed the
@@ -37,8 +37,8 @@ A class that handles rendering and updates for all entities.
   render target is the sketch passed to the engine's constructor. *Note:
   changing the render target will reset `cameraAnchor`, `cameraPos`,
   `worldWidth`, and `worldHeight` to their default values.*
-- `renderWidth`: (constant `number`) The width of the current render target.
-- `renderHeight`: (constant `number`) The height of the current render target.
+- `renderWidth`: (readonly `number`) The width of the current render target.
+- `renderHeight`: (readonly `number`) The height of the current render target.
 - `cameraPos`: (`p5.Vector`) The position of the camera in world space. *Note:*
   Setting `cameraPos` will also set `cameraTarget` to the same position - this 
   prevents unwanted camera movement next time the engine updates.
@@ -95,7 +95,7 @@ let engine;
 let rt;
 
 function setup() {
-  rt = new p5.Graphics(600, 400, P2D);
+  rt = new p5.Graphics(600, 400);
 
   engine = new Kepler.Engine({
     sketch: window,
