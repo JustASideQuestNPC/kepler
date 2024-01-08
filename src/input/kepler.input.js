@@ -1,3 +1,15 @@
+/*
+ *   _                 _              _                       _   
+ *  | | __ ___  _ __  | |  ___  _ __ (_) _ __   _ __   _   _ | |_ 
+ *  | |/ // _ \| '_ \ | | / _ \| '__|| || '_ \ | '_ \ | | | || __|
+ *  |   <|  __/| |_) || ||  __/| | _ | || | | || |_) || |_| || |_ 
+ *  |_|\_\\___|| .__/ |_| \___||_|(_)|_||_| |_|| .__/  \__,_| \__|
+ *             |_|                             |_|                   
+ * 
+ *  Part of Kepler, a 2d game engine for p5.js
+ *  https://github.com/JustASideQuestNPC/kepler
+ */
+
 // add input stuff to the Kepler namespace using a "self-executing anonymous
 // function" and associated black magic
 (function (Kepler) {
