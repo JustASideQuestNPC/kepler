@@ -18,7 +18,7 @@ A class that handles collisions for a single point.
 
 ## Fields
 - `position`: (`p5.Vector`) The position of the point. *Note: changing
-  `position.x` and/or `position.y` will also change `x` and `y`, and vice
+  `position.x` and/or `position.y` will also change `x` and/or `y`, and vice
   versa.*
 - `x`: (`number`) X coordinate of the point. *Note: Changing this value will
   also change `position.x`, and vice versa.*

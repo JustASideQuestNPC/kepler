@@ -1,0 +1,69 @@
+{ "frames": {
+   "frame 0 (empty)": {
+    "frame": { "x": 0, "y": 16, "w": 1, "h": 1 },
+    "trimmed": true,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 1, "h": 1 },
+    "sourceSize": { "w": 16, "h": 16 }
+   },
+   "frame 1": {
+    "frame": { "x": 0, "y": 0, "w": 4, "h": 16 },
+    "trimmed": true,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 4, "h": 16 },
+    "sourceSize": { "w": 16, "h": 16 }
+   },
+   "frame 2": {
+    "frame": { "x": 4, "y": 0, "w": 4, "h": 16 },
+    "trimmed": true,
+    "spriteSourceSize": { "x": 4, "y": 0, "w": 4, "h": 16 },
+    "sourceSize": { "w": 16, "h": 16 }
+   },
+   "frame 3": {
+    "frame": { "x": 8, "y": 0, "w": 4, "h": 16 },
+    "trimmed": true,
+    "spriteSourceSize": { "x": 8, "y": 0, "w": 4, "h": 16 },
+    "sourceSize": { "w": 16, "h": 16 }
+   },
+   "frame 4": {
+    "frame": { "x": 12, "y": 0, "w": 4, "h": 16 },
+    "trimmed": true,
+    "spriteSourceSize": { "x": 12, "y": 0, "w": 4, "h": 16 },
+    "sourceSize": { "w": 16, "h": 16 }
+   },
+   "frame 5": {
+    "frame": { "x": 0, "y": 16, "w": 1, "h": 1 },
+    "trimmed": true,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 1, "h": 1 },
+    "sourceSize": { "w": 16, "h": 16 }
+   },
+   "frame 6 (empty)": {
+    "frame": { "x": 16, "y": 0, "w": 16, "h": 4 },
+    "trimmed": true,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 16, "h": 4 },
+    "sourceSize": { "w": 16, "h": 16 }
+   },
+   "frame 7": {
+    "frame": { "x": 16, "y": 4, "w": 16, "h": 4 },
+    "trimmed": true,
+    "spriteSourceSize": { "x": 0, "y": 4, "w": 16, "h": 4 },
+    "sourceSize": { "w": 16, "h": 16 }
+   },
+   "frame 8": {
+    "frame": { "x": 16, "y": 8, "w": 16, "h": 4 },
+    "trimmed": true,
+    "spriteSourceSize": { "x": 0, "y": 8, "w": 16, "h": 4 },
+    "sourceSize": { "w": 16, "h": 16 }
+   },
+   "frame 9": {
+    "frame": { "x": 16, "y": 12, "w": 16, "h": 4 },
+    "trimmed": true,
+    "spriteSourceSize": { "x": 0, "y": 12, "w": 16, "h": 4 },
+    "sourceSize": { "w": 16, "h": 16 }
+   }
+ },
+ "meta": {
+  "image": "example-sheet.png",
+  "frameTags": [
+    { "name": "everything", "from": 0, "to": 9 }
+  ]
+ }
+}
