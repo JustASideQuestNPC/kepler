@@ -1,4 +1,4 @@
-# kepler.input Reference
+# kepler.sprite Reference
 ***Note:** This is a language reference, not a tutorial. For a tutorial, see the
 readme.*
 
@@ -683,9 +683,6 @@ editor, but it only needs 2 things to be used with Kepler:
   - `"from"` is the index of the first frame of the tag.
   - `"to"` is the index of the last frame of the tag.
 
-For a simple example of how the sprite sheet and data file should be formatted,
-see the `json-format-example` folder in the same folder as this document. There
-are 2 data files there - `example-sheet-minimized.json` is a file that contains
-only the required data, and `example-sheet-full.json` is a file that also has
-all the extra data added by the editor that created the file (Aseprite, in this
-case).
+For a simple(ish) example of how the sprite sheet and data file should be 
+formatted, see the `json-format-example` folder in the same folder as this
+document.
