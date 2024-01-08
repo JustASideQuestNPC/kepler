@@ -8,9 +8,11 @@ let input;
 /** @type {number} */
 let counter = 0;
 
-function preload() {
-  loadJSON("../../extras/color-palette.json", loadPalette);
+const BLACK = "#1a1c2c";
+const RED   = "#b13e53";
+const GREEN = "#38b764";
 
+function preload() {
   input = Kepler.Input.makeNew({ sketch: window });
   input.loadActionList("action-list.json");
 }
@@ -34,7 +36,7 @@ function setup() {
 
 function draw() {
   input.update();
-  background(TRUE_WHITE);
+  background(255);
 
   noStroke();
   setFillColor("spacebar continuous");

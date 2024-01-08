@@ -31,9 +31,11 @@ let pbModeIndex = 2;
  */
 const UPSCALE_FACTOR = 10;
 
-function preload() {
-  loadJSON("../../extras/color-palette.json", loadPalette);
+const BLACK      = "#1a1c2c";
+const RED        = "#b13e53";
+const LIGHT_BLUE = "#41a6f6";
 
+function preload() {
   input = Kepler.Input.makeNew({ sketch: window });
   input.loadActionList("action-list.json");
 
@@ -63,10 +65,10 @@ function draw() {
   input.update();
   engine.update();
 
-  pg.background(WHITE);
+  pg.background(255);
   engine.render();
 
-  background(WHITE);
+  background(255);
   image(pg, 0, 0, width, height);
 
   fill(BLACK);
