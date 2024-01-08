@@ -1,55 +1,42 @@
-# KInput Reference
+# kepler.input Reference
 ***Note:** This is a language reference, not a tutorial. For a tutorial, see the
-readme...which doesn't currently exist.*
+readme.*
 
 # Contents:
-- **[Key:](#key)** Enum for keyboard keys and mouse buttons.
-- **[KInput:](#kinput)** Main class that manages the input system.
+- [**Kepler.Input:**](#keplerinput) Main class that manages the input system.
 
-# Key
-### Description
-A datatype/enum that stores keyboard keys and mouse buttons. `Key` is used by
-any function and method that takes a key or button as a parameter.
-
-## Values
-Keys are formatted as `Key.KEY_NAME`, where `KEY_NAME` is the name of the
-key/mouse button formatted in SCREAMING_SNAKE_CASE. A list of all keys can be
-found at [the bottom of this file](#key-list).
-
-# KInput
+# Kepler.Input
 ## Description
 A class that handles inputs for an entire sketch.
 
 ## Static Methods
-- [**makeNew()**](#makenew)
+- [`makeNew()`](#makenew)
 
 ## Instance Methods
-- [**addAction()**](#addaction)
-- [**update()**](#update)
-- [**isActive()**](#isactive)
-- [**getKeyState()**](#getkeystate)
-- [**pressKey()**](#presskey)
-- [**releaseKey()**](#releasekey)
-- [**pressMouse()**](#pressmouse)
-- [**releaseMouse()**](#releasemouse)
+- [`addAction()`](#addaction)
+- [`loadActionList()`](#loadactionlist)
+- [`update()`](#update)
+- [`isActive()`](#isactive)
+- [`getKeyState()`](#getkeystate)
+- [`pressKey()`](#presskey)
+- [`releaseKey()`](#releasekey)
+- [`pressMouse()`](#pressmouse)
+- [`releaseMouse()`](#releasemouse)
 
 
 ### makeNew()
 #### Description
-A static method that constructs and returns a new `KInput` object. If any of the
-sketch's main input listeners (`keyPressed()`, `keyReleased()`,
+A static method that constructs and returns a new `Kepler.Input` object. If any 
+of the sketch's main input listeners (`keyPressed()`, `keyReleased()`,
 `mousePressed()`, and `mouseReleased()`) haven't already been defined, it
-defines versions of them that update the created instance. `KInput` objects 
-hould only be created using `makeNew()`, *not* `new KInput()`.
+defines versions of them that update the created instance. `Kepler.Input`
+objects can only be created using `makeNew()`, *not* `new Kepler.Input()`.
 
-The first parameter is the sketch that the object is being constructed in and
-that the input listeners will be defined for. If you're running your sketch in
-global mode, use `window` for this parameter. If you're using it in instance
-mode, use whatever you're defining `setup` and `draw` for.
-
-The optional second parameter is a boolean that enables or disables the F12
-hotkey, which on most browsers opens the debugging console. The default value
-is `true`.
+Like most constructors in Kepler, `makeNew()` takes a configuration object,
+which can have up to two properties. The first, `sketch`, is the sketch or
+window to define input listeners for. The second, `f12HotkeyEnabled`, is whether
+the created input listeners should override the browser's default behavior when
+the F12 key is pressed. In most browsers, F12 opens the debug console.
 
 The automatically defined input listeners should be enough for most
 applications. If you decide to define them yourself, you'll need to call
@@ -63,7 +50,9 @@ let input;
 
 // global mode
 function setup() {
-  input = KInput.makeNew(window);
+  input = Kepler.Input.makeNew({
+    sketch: window
+  });
 }
 ```
 
@@ -74,15 +63,18 @@ const s = (sketch) => {
   
   sketch.setup = () => {
     // disable the F12 hotkey
-    input = KInput.makeNew(window, false);
-  }
+    input = Kepler.Input.makeNew({
+      sketch: sketch,
+      f12HotkeyEnabled: false
+    });
+  };
 }
 
 let sp = new p5(s);
 ```
 
 #### Syntax
-`KInput.makeNew(sketch, [f12HotkeyEnabled])`
+`KInput.makeNew({sketch, [f12HotkeyEnabled]})`
 
 #### Parameters
 - `sketch`: (`p5` | `Window`) The sketch (or window if in global mode) that
@@ -104,21 +96,21 @@ refer to them by name and only use the ones you need.
 
 The only 2 parameters that are required are `name` and `keys`. `name` is a
 string with the name of the action, which you'll use when you check its state.
-`keys` is an array containing every key or mouse button that can trigger the
-action.
+`keys` is an array containing the names of every key or mouse button that can
+trigger the action. See the [key list](#key-list) for a list of valid key names.
 
 The third parameter, `mode`, determines the action's activation mode, which can
-be either `CONTINUOUS`, `PRESS`, or `RELEASE`:
-- `CONTINUOUS` actions are active on every frame that a key bound to them is
+be either `"continuous"`, `"press"`, or `"release"`:
+- `"continuous"` actions are active on every frame that a key bound to them is
   pressed.
-- `PRESS` actions are active for a single frame when a key bound to them is
+- `"press"` actions are active for a single frame when a key bound to them is
   initially pressed. After activating, they won't activate again until every key
   bound to them is released for at least one frame.
-- `RELEASE` actions are active for a single frame when every key bound to them
+- `"release"` actions are active for a single frame when every key bound to them
   is initially released. After activating, they won't activate again until at
   least one key bound to them is released for at least one frame.
 
-The default activation mode is `CONTINUOUS`.
+The default activation mode is `"continuous"`.
 
 The fourth parameter, `chord`, is a boolean that sets whether the action is a
 chord. Chord actions can only become active when every key bound to them is
@@ -136,19 +128,19 @@ let input;
 let counter = 0;
 
 function setup() {
-  input = KInput.makeNew();
+  input = Kepler.Input.makeNew({ sketch: window });
   input.addAction({
     name: "a basic action",
-    keys: [Key.SPACEBAR]
+    keys: ["spacebar"]
   });
   input.addAction({
     name: "a press action with multiple keys",
-    keys: [Key.SHIFT, Key.LEFT_MOUSE],
-    mode: PRESS
+    keys: ["shift", "left mouse"],
+    mode: "press"
   });
   input.addAction({
     name: "a chord action with a callback function",
-    keys: [Key.A, Key.S, Key.D, Key.F],
+    keys: ["a", "s", "d", "f"],
     chord: true,
     callback: () => {
       ++counter;
@@ -162,35 +154,68 @@ function setup() {
 
 #### Parameters
 - `name`: (`string`) The name of the action.
-- `keys`: (`Key[]`) An array containing all keys or mouse buttons that can
+- `keys`: (`string[]`) An array containing all keys or mouse buttons that can
     activate the action.
 - `mode`: (optional `string`) The action's activation mode, either
-    `CONTINUOUS`, `PRESS`, or `RELEASE` (any other values will cause an
-    error). The default value is `CONTINUOUS`.
+    `"continuous"`, `"press"`, or `"release"` (any other values will cause an
+    error). The default value is `"continuous"`.
 - `chord`: (optional `boolean`) If `true`, the action can only activate whenever
     every key or button bound to it is pressed at the same time. The default
     value is `false`.
 - `callback`: (optional `function(): void`) The action's callback function. The
     default value is a function that does nothing.
 
+### loadActionList()
+#### Description
+Loads one or more actions from a .json file. This method is asynchronous,
+meaning it may not finish before the next line in your sketch is executed. To
+prevent this from causing problems, call [`makeNew()`](#makenew) and
+`loadActionList()` in `preload()`, instead of in `setup()`.
+
+An example of how to format the .json file can be found below. Note that for
+technical reasons, actions with a callback function cannot be stored in a file.
+
+#### Examples
+```js
+let input;
+
+function preload() {
+  input = Kepler.Input.makeNew({ sketch: window });
+  input.loadActionList("action-list.json");
+}
+```
+##### `action-list.json`
+```json
+{
+  "example action": {
+    "keys": ["space"],
+    "mode": "press",
+    "chord": true
+  }
+}
+```
+
+#### Syntax
+`loadActionList(path)`
+
+#### Parameters
+- `path`: (`string`) The path to the .json file.
+
 ### update()
 #### Description
 Updates the manager and all actions inside it. This needs to be called once in
-your `draw` function for the manager to work correctly, but aside from that you
-don't need to do anything special with it.
+`draw` function for the manager to work correctly.
 
 #### Examples
 ```js
 let input;
 
 function setup() {
-  input = KInput.makeNew();
+  input = Kepler.Input.makeNew({ sketch: window });
 }
 
 function draw() {
   input.update();
-
-  // do stuff with actions here
 }
 ```
 
@@ -230,7 +255,7 @@ function draw() {
 ### getKeyState()
 #### Description
 Returns whether a specific key or mouse button is pressed. This function takes
-a single parameter, which is the `Key` enum value to check the state of.
+a single parameter, which is the key to check the state of.
 
 #### Examples
 ```js
@@ -240,16 +265,16 @@ a single parameter, which is the `Key` enum value to check the state of.
 function draw() {
   input.update();
 
-  if (input.getKeyState(Key.SPACEBAR)) background(250, 65, 65);
+  if (input.getKeyState("spacebar")) background(250, 65, 65);
   else background(235, 64, 52);
 }
 ```
 
 #### Syntax
-`getKeyState(code)`
+`getKeyState(key)`
 
 #### Parameters
-- `code`: (`Key`) The key/button to get the state of.
+- `key`: (`string`) The key/button to get the state of.
 
 #### Returns
 `boolean`: `true` if the key is pressed, `false` if it is not.
@@ -347,111 +372,108 @@ function mouseReleased() {
 
 
 # Key List
-*Note: Most names are self-explanatory, but descriptions have been added to ones that may be unclear.*
-- `Key.LEFT_MOUSE`
-- `Key.RIGHT_MOUSE`
-- `Key.MIDDLE_MOUSE`
-- `Key.TAB`
-- `Key.ENTER`
-- `Key.SHIFT`
-- `Key.CONTROL`
-- `Key.CTRL` - Alias of `CONTROL`
-- `Key.ALT`
-- `Key.PAUSE`
-- `Key.CAPS_LOCK`
-- `Key.ESCAPE`
-- `Key.SPACEBAR`
-- `Key.SPACE` - Alias of `SPACEBAR`
-- `Key.PAGE_UP`
-- `Key.PAGE_DOWN`
-- `Key.END`
-- `Key.HOME`
-- `Key.LEFT_ARROW`
-- `Key.LEFT` - Alias of `LEFT_ARROW`
-- `Key.UP_ARROW`
-- `Key.UP` - Alias of `UP_ARROW`
-- `Key.RIGHT_ARROW`
-- `Key.RIGHT` - Alias of `RIGHT_ARROW`
-- `Key.DOWN_ARROW`
-- `Key.DOWN` - Alias of `DOWN_ARROW`
-- `Key.INSERT`
-- `Key.DELETE`
-- `Key.ZERO`
-- `Key.ONE`
-- `Key.TWO`
-- `Key.THREE`
-- `Key.FOUR`
-- `Key.FIVE`
-- `Key.SIX`
-- `Key.SEVEN`
-- `Key.EIGHT`
-- `Key.NINE`
-- `Key.SEMICOLON`
-- `Key.EQUALS`
-- `Key.A`
-- `Key.B`
-- `Key.C`
-- `Key.D`
-- `Key.E`
-- `Key.F`
-- `Key.G`
-- `Key.H`
-- `Key.I`
-- `Key.J`
-- `Key.K`
-- `Key.L`
-- `Key.M`
-- `Key.N`
-- `Key.O`
-- `Key.P`
-- `Key.Q`
-- `Key.R`
-- `Key.S`
-- `Key.T`
-- `Key.U`
-- `Key.V`
-- `Key.W`
-- `Key.X`
-- `Key.Y`
-- `Key.Z`
-- `Key.NUMPAD_ZERO`
-- `Key.NUMPAD_ONE`
-- `Key.NUMPAD_TWO`
-- `Key.NUMPAD_THREE`
-- `Key.NUMPAD_FOUR`
-- `Key.NUMPAD_FIVE`
-- `Key.NUMPAD_SIX`
-- `Key.NUMPAD_SEVEN`
-- `Key.NUMPAD_EIGHT`
-- `Key.NUMPAD_NINE`
-- `Key.NUMPAD_MULTIPLY`
-- `Key.NUMPAD_ADD`
-- `Key.NUMPAD_COMMA`
-- `Key.NUMPAD_SUBTRACT`
-- `Key.NUMPAD_DECIMAL`
-- `Key.NUMPAD_DIVIDE`
-- `Key.F1`
-- `Key.F2`
-- `Key.F3`
-- `Key.F4`
-- `Key.F5`
-- `Key.F6`
-- `Key.F7`
-- `Key.F8`
-- `Key.F9`
-- `Key.F10`
-- `Key.F11`
-- `Key.F12`
-- `Key.NUM_LOCK`
-- `Key.SCROLL_LOCK`
-- `Key.DASH`
-- `Key.MINUS` - Alias of `DASH`
-- `Key.COMMA`
-- `Key.PERIOD`
-- `Key.SLASH`
-- `Key.BACKTICK` - ` Key
-- `Key.OPEN_BRACKET`
-- `Key.BACKSLASH`
-- `Key.CLOSE_BRACKET`
-- `Key.SINGLE_QUOTE`
-- `Key.QUOTE` - Alias of `SINGLE_QUOTE`
+- `"left mouse"`
+- `"right mouse"`
+- `"middle mouse"`
+- `"backspace"`
+- `"tab"`
+- `"enter"`
+- `"shift"`
+- `"control"`
+- `"alt"`
+- `"pause"`
+- `"caps lock"`
+- `"escape"`
+- `"spacebar"`
+- `"space"`
+- `" "`
+- `"page up"`
+- `"page down"`
+- `"end"`
+- `"home"`
+- `"left arrow"`
+- `"left"`
+- `"up arrow"`
+- `"up"`
+- `"right arrow"`
+- `"right"`
+- `"down arrow"`
+- `"down"`
+- `"insert"`
+- `"delete"`
+- `"0"`
+- `"1"`
+- `"2"`
+- `"3"`
+- `"4"`
+- `"6"`
+- `"7"`
+- `"8"`
+- `"9"`
+- `";"`
+- `"="`
+- `"a"`
+- `"b"`
+- `"c"`
+- `"d"`
+- `"e"`
+- `"f"`
+- `"g"`
+- `"h"`
+- `"i"`
+- `"j"`
+- `"k"`
+- `"l"`
+- `"m"`
+- `"n"`
+- `"o"`
+- `"p"`
+- `"q"`
+- `"r"`
+- `"s"`
+- `"t"`
+- `"u"`
+- `"v"`
+- `"w"`
+- `"x"`
+- `"y"`
+- `"z"`
+- `"numpad 0"`
+- `"numpad 1"`
+- `"numpad 2"`
+- `"numpad 3"`
+- `"numpad 4"`
+- `"numpad 5"`
+- `"numpad 6"`
+- `"numpad 7"`
+- `"numpad 8"`
+- `"numpad 9"`
+- `"numpad *"`
+- `"numpad +"`
+- `"numpad ,"`
+- `"numpad -"`
+- `"numpad ."`
+- `"numpad /"`
+- `"f1"`
+- `"f2"`
+- `"f3"`
+- `"f4"`
+- `"f5"`
+- `"f6"`
+- `"f7"`
+- `"f8"`
+- `"f9"`
+- `"f10"`
+- `"f11"`
+- `"f12"`
+- `"num lock"`
+- `"scroll lock"`
+- `"-"`
+- `","`
+- `"."`
+- `"/"`
+- ``"`"``
+- `"["`
+- `"\\"`
+- `"]"`
+- `"'"`

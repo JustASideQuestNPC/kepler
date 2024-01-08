@@ -20,7 +20,7 @@ let tagNames;
 let tagIndex = 0;
 
 /** @type {Symbol[]} */
-let playbackModes = [Kepler.PLAY_ONCE, Kepler.PING_PONG, Kepler.LOOP];
+let playbackModes = ["play once", "ping pong", "loop"];
 
 /** @type {number} */
 let pbModeIndex = 2;
@@ -69,20 +69,11 @@ function draw() {
   background(WHITE);
   image(pg, 0, 0, width, height);
 
-  let playModeString;
-  if (entity.sprite.playbackMode === Kepler.PLAY_ONCE) {
-    playModeString = "PLAY_ONCE";
-  } else if (entity.sprite.playbackMode === Kepler.PING_PONG) {
-    playModeString = "PING_PONG";
-  } else {
-    playModeString = "LOOP";
-  }
-
   fill(BLACK);
   text(
     `Tag: "${entity.sprite.currentTag}"\n` +
       `Frame: ${entity.sprite.currentFrame}\n` +
-      `Playback mode: ${playModeString}\n` +
+      `Playback mode: "${entity.sprite.playbackMode}"\n` +
       `Paused: ${entity.sprite.paused}\n` +
       `      to pause/unpause\n` + // spacing to make highlighted text line up
       `  /     to cycle tags\n` +
@@ -117,7 +108,7 @@ class TestEntity extends Kepler.Entity {
   position;
 
   /** @type {Kepler.AnimatedSprite} */
-  sprite;
+  sprite = spriteLoader.makeAnimatedSprite("animation test");
 
   /**
    * @constructor
@@ -127,7 +118,7 @@ class TestEntity extends Kepler.Entity {
   constructor(x, y) {
     super();
     this.position = createVector(x, y);
-    this.sprite = spriteLoader.makeAnimatedSprite("animation test");
+    //this.sprite = spriteLoader.makeAnimatedSprite("animation test");
   }
 
   /** @override */

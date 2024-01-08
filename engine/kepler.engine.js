@@ -16,8 +16,8 @@
     /* jsdoc typedefs */
     /**
      * A user-defined game entity class. Can be literally anything as long as it
-     * derives from KEntity.
-     * @typedef {Kepler.KEntity} Entity
+     * derives from Kepler.Entity.
+     * @typedef {Kepler.Entity} Entity
      */
 
     /**
@@ -66,7 +66,7 @@
     }
 
     /**
-     * The time between the last 2 updates, in second.
+     * The time between the last 2 updates, in seconds.
      * @private
      * @type {number}
      */
@@ -82,11 +82,11 @@
     /**
      * The current delta time multiplier or "speed of time". When entities are
      * updated, their update method is passed the current delta time multiplied
-     * by this unless the entity has the USE_RAW_DELTA_TIME tag. A multiplier of
-     * 1 (the default) keeps the same speed, a multiplier > 1 increases speed,
-     * and a multiplier < 1 lowers speed. Multipliers <= 0 create undefined
-     * behavior (in other words, it's probably bad but I don't feel like testing
-     * it)!
+     * by this unless the entity has the USES_RAW_DELTA_TIME tag. A multiplier
+     * of 1 (the default) keeps the same speed, a multiplier > 1 increases
+     * speed, and a multiplier < 1 lowers speed. Multipliers <= 0 create
+     * undefined behavior (in other words, it's probably bad but I don't feel
+     * like checking for it).
      * @type {number}
      */
     deltaTimeMultiplier = 1;
@@ -150,7 +150,8 @@
         this.#screenHeight / 2
       );
       this.cameraPos = this.cameraAnchor;
-      this.useCameraBoundary = false;
+      this.worldWidth = this.#screenWidth;
+      this.worldHeight = this.#screenHeight;
     }
 
     /**
@@ -217,7 +218,7 @@
     cameraTarget = createVector();
 
     /**
-     * A vector that etermines what point on the screen the camera position
+     * A vector that determines what point on the screen the camera position
      * corresponds to. An anchor of `(0, 0)` places the camera at the top left
      * corner of the screen, an anchor of `(width, height)` places the camera at
      * the bottom right corner of the screen, and so on. The default camera
@@ -228,14 +229,8 @@
       return createVector(-this.#cameraOffset.x, -this.#cameraOffset.y);
     }
     set cameraAnchor(anchor) {
-      // the camera anchor can be set from either a p5.Vector or an array of coords
-      if (anchor.constructor === Array) {
-        this.#cameraOffset.x = -anchor[0];
-        this.#cameraOffset.y = -anchor[1];
-      } else {
-        this.#cameraOffset.x = -anchor.x;
-        this.#cameraOffset.y = -anchor.y;
-      }
+      this.#cameraOffset.x = -anchor.x;
+      this.#cameraOffset.y = -anchor.y;
     }
 
     /**
@@ -336,45 +331,63 @@
     #worldHeight;
 
     /**
-     * The size of the world; used for the camera boundary.
-     * @param {[number, number]} size
-     */
-    set worldSize(size) {
-      this.worldWidth = size[0];
-      this.worldHeight = size[1];
-    }
-
-    /**
-     * Creates a new KEngine.
+     * Creates a new Kepler.Engine.
      * @constructor
      * @param {Object} [args]
      * @param {Window | p5} args.sketch The sketch instance the engine is
      *    running in. If you're running your code in global mode, this should be
      *    `window`. If you're running your code in instance mode, this should be
      *    the same object you're defining `setup` and `draw` for.
-     * @param {Renderable} [args.renderTarget] The canvas to render entities to.
+     * @param {Renderable} [args.renderTarget]
      * @param {number} [args.tickRate]
+     * @param {{x: number, y: number}} [args.cameraAnchor]
+     * @param {{x: number, y: number}} [args.cameraPos]
+     * @param {boolean} [args.useCameraBoundary]
+     * @param {number} [args.worldWidth]
+     * @param {number} [args.worldHeight]
      */
     constructor({
       sketch,
       renderTarget = null,
       tickRate = null,
+      cameraAnchor = null,
+      cameraPos = null,
+      useCameraBoundary = false,
+      worldWidth = null,
+      worldHeight = null,
     } = {}) {
       if (sketch == null) {
         throw new Error(
           "Kepler.Engine requires a sketch! (if you're running in global " +
             'mode, use "window")'
-      );
+        );
       }
 
       this.#sketch = sketch;
       this.#renderTarget = renderTarget || sketch;
-      this.cameraAnchor = createVector(
-        this.#screenWidth / 2,
-        this.#screenHeight / 2
-      );
-      this.cameraPos = this.cameraAnchor;
       this.tickRate = tickRate || sketch.getTargetFrameRate();
+      if (cameraAnchor != null) {
+        this.cameraAnchor = this.#sketch.createVector(
+          cameraAnchor.x,
+          cameraAnchor.y
+        );
+      } else {
+        this.cameraAnchor = this.#sketch.createVector(
+          this.#screenWidth / 2,
+          this.#screenHeight / 2
+        );
+      }
+      if (cameraPos != null) {
+        this.cameraPos = this.#sketch.createVector(
+          cameraPos.x,
+          cameraPos.y
+        );
+      } else {
+        this.cameraPos = this.cameraAnchor.copy();
+      }
+      this.useCameraBoundary = useCameraBoundary;
+      this.#worldWidth = worldWidth || this.#worldWidth;
+      this.#worldHeight = worldHeight || this.#worldHeight;
     }
 
     /**
@@ -395,7 +408,7 @@
 
     /**
      * Updates all active entities with the current time delta - call this once
-     * at the top of your `draw` loop.
+     * in your `draw` loop.
      * @method
      */
     update() {
@@ -498,8 +511,8 @@
     }
 
     /**
-     * Returns a list containing all entities that a predicate function returns
-     * `true` for.
+     * Returns an array containing all entities that a predicate function
+     * returns `true` for.
      * @method
      * @param {function(Entity): boolean} predicate A predicate function that
      *    takes an entity as a parameter, and returns a boolean based on whether
@@ -526,8 +539,8 @@
      * @returns {p5.Vector}
      *
      * @overload
-     * @param {number} arg1 x coordinate in screen space
-     * @param {number} arg2 y coordinate in screen space
+     * @param {number} arg1 x coordinate in screen space.
+     * @param {number} arg2 y coordinate in screen space.
      * @returns {[number, number]}
      */
     screenPosToWorldPos(arg1, arg2) {
@@ -548,8 +561,8 @@
      * @returns {p5.Vector}
      *
      * @overload
-     * @param {number} arg1 x coordinate in world space
-     * @param {number} arg2 y coordinate in world space
+     * @param {number} arg1 x coordinate in world space.
+     * @param {number} arg2 y coordinate in world space.
      * @returns {[number, number]}
      */
     worldPosToScreenPos(arg1, arg2) {

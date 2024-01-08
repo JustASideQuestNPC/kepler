@@ -56,15 +56,31 @@
     /** @type {p5.Vector} */
     position;
 
+    /** @type {number} */
+    get x() {
+      return this.position.x;
+    }
+    set x(value) {
+      this.position.x = value;
+    }
+
+    /** @type {number} */
+    get y() {
+      return this.position.y;
+    }
+    set y(value) {
+      this.position.y = value;
+    }
+
     /**
      * Constructs a new PointCollider.
      * @constructor
      * @param {number} x
      * @param {number} y
-     * @param {Window | p5} [sketch] The sketch to use for collision
+     * @param {Window | p5} sketch The sketch to use for collision
      *    calculations.
      */
-    constructor(x, y, sketch = window) {
+    constructor({ x, y, sketch }) {
       this.#sketch = sketch;
       this.position = this.#sketch.createVector(x, y);
     }
@@ -124,17 +140,15 @@
     /**
      * Constructs a new LineCollider.
      * @constructor
-     * @param {number} x1
-     * @param {number} y1
-     * @param {number} x2
-     * @param {number} y2
-     * @param {Window | p5} [sketch] The sketch to use for collision
+     * @param {{x: number, y: number}} start
+     * @param {{x: number, y: number}} end
+     * @param {Window | p5} sketch The sketch to use for collision
      *    calculations.
      */
-    constructor(x1, y1, x2, y2, sketch = window) {
+    constructor({ start, end, sketch }) {
       this.#sketch = sketch;
-      this.start = sketch.createVector(x1, y1);
-      this.end = sketch.createVector(x2, y2);
+      this.start = sketch.createVector(start.x, start.y);
+      this.end = sketch.createVector(end.x, end.y);
     }
 
     /**
@@ -235,11 +249,6 @@
      */
     #sketch;
 
-    /** @type {p5.Vector} */
-    get position() {
-      return this.#position;
-    }
-
     /** @type {number} */
     get radius() {
       return this.#radius;
@@ -255,10 +264,25 @@
     }
 
     /**
-     * @private
      * @type {p5.Vector}
      */
-    #position;
+    position;
+
+    /** @type {number} */
+    get x() {
+      return this.position.x;
+    }
+    set x(value) {
+      this.position.x = value;
+    }
+
+    /** @type {number} */
+    get y() {
+      return this.position.y;
+    }
+    set y(value) {
+      this.position.y = value;
+    }
 
     /**
      * @private
@@ -279,47 +303,13 @@
      * @param {number} x
      * @param {number} y
      * @param {number} radius
-     * @param {Window | p5} [sketch] The sketch to use for collision
+     * @param {Window | p5} sketch The sketch to use for collision
      *    calculations.
      */
-    constructor(x, y, radius, sketch = window) {
+    constructor({ x, y, radius, sketch }) {
       this.#sketch = sketch;
-      this.#position = sketch.createVector(x, y);
+      this.position = sketch.createVector(x, y);
       this.radius = radius;
-    }
-
-    /**
-     * Sets the collider's position in world space.
-     * @overload
-     * @param {number} x
-     * @param {number} y
-     *
-     * @overload
-     * @param {p5.Vector} vec
-     */
-    setPos(x, y) {
-      if (x instanceof p5.Vector) {
-        this.#position.set(x);
-      } else {
-        this.#position.set(x, y);
-      }
-    }
-
-    /**
-     * Moves the collider in world space.
-     * @overload
-     * @param {number} x
-     * @param {number} y
-     *
-     * @overload
-     * @param {p5.Vector} vec
-     */
-    modPos(x, y) {
-      if (x instanceof p5.Vector) {
-        this.#position.add(x);
-      } else {
-        this.#position.add(x, y);
-      }
     }
 
     /**
@@ -402,6 +392,11 @@
     /** @type {p5.Vector} */
     #position = createVector(0, 0);
 
+    /** @type {p5.Vector} */
+    get position() {
+      return this.#position.copy();
+    }
+
     /** @type {p5.Vector[]} */
     #points = [];
 
@@ -417,6 +412,14 @@
     /** @type {BoundingRect} */
     #rotatedBBox;
 
+    /** @type {number} */
+    #angle;
+    
+    /** @type {number} */
+    get angle() {
+      return this.#angle;
+    }
+
     /**
      * Constructs a new PolygonCollider.
      * @constructor
@@ -424,10 +427,10 @@
      * @param {[number,number][]} args.points
      * @param {number} [args.x]
      * @param {number} [args.y]
-     * @param {Window | p5} [sketch] The sketch to use for collision
+     * @param {Window | p5} sketch The sketch to use for collision
      *    calculations.
      */
-    constructor({ points, x = 0, y = 0 }, sketch = window) {
+    constructor({ points, x = 0, y = 0, sketch }) {
       this.#sketch = sketch;
       if (points.length < 3) {
         throw new Error("Polygon colliders must have at least 3 points!");
@@ -443,6 +446,7 @@
       this.#bbox = this.#rotatedBBox.copy();
 
       this.setPos(x, y);
+      this.#angle = 0;
     }
 
     /**
@@ -501,6 +505,7 @@
      * @param {number} angle
      */
     setAngle(angle) {
+      this.#angle = angle;
       for (let i = 0; i < this.#absolutePoints.length; ++i) {
         this.#rotatedPoints[i].set(
           p5.Vector.rotate(this.#absolutePoints[i], angle)
@@ -517,6 +522,7 @@
      * @param {number} angle
      */
     modAngle(angle) {
+      this.#angle += angle;
       for (let p of this.#rotatedPoints) {
         p.rotate(angle);
       }

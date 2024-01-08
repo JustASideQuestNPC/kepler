@@ -6,20 +6,6 @@
   // used to hack in private constructors for the sprite
   const SPRITE_CONSTRUCTOR_LOCK = Symbol();
 
-  /* "enums" - these check if they're already defined so that nothing breaks if
-   * i use the same keywords in a different kepler module */
-  // sprite alignments
-  Kepler.TOP = Kepler.TOP || Symbol();
-  Kepler.BOTTOM = Kepler.BOTTOM || Symbol();
-  Kepler.LEFT = Kepler.LEFT || Symbol();
-  Kepler.RIGHT = Kepler.RIGHT || Symbol();
-  Kepler.CENTER = Kepler.CENTER || Symbol();
-
-  // animation playback modes
-  Kepler.PLAY_ONCE = Kepler.PLAY_ONCE || Symbol();
-  Kepler.PING_PONG = Kepler.PING_PONG || Symbol();
-  Kepler.LOOP = Kepler.LOOP || Symbol();
-
   /**
    * Class that manages sprite loading.
    * @class
@@ -243,7 +229,7 @@
       {
         path,
         position = { x: 0, y: 0 },
-        anchor = { x: Kepler.CENTER, y: Kepler.CENTER },
+        anchor = { x: "center", y: "center" },
         rotation = 0,
         scale = { x: 1, y: 1 },
         size = { width: null, height: null },
@@ -258,38 +244,37 @@
           data.anchor = [];
           if (typeof anchor.x === "number") {
             data.anchor[0] = anchor.x;
-          } else if (anchor.x === Kepler.LEFT) {
+          } else if (anchor.x === "left") {
             data.anchor[0] = 0;
-          } else if (anchor.x === Kepler.RIGHT) {
+          } else if (anchor.x === "right") {
             data.anchor[0] = data.image.width;
-          } else if (anchor.x === Kepler.CENTER) {
+          } else if (anchor.x === "center") {
             data.anchor[0] = data.image.width / 2;
           } else {
             throw new Error(
               `Invalid horizontal anchor for sprite ` +
-                `"${spriteName}" (Expected Kepler.LEFT, Kepler.CENTER, ` +
-                `Kepler.RIGHT, or a number, recieved "${anchor.x}")`
+                `"${spriteName}" (Expected "left", "center", ` +
+                `"right", or a number, recieved "${anchor.x}")`
             );
           }
 
           if (typeof anchor.y === "number") {
             data.anchor[1] = anchor.y;
-          } else if (anchor.y === Kepler.TOP) {
+          } else if (anchor.y === "top") {
             data.anchor[1] = 0;
-          } else if (anchor.y === Kepler.BOTTOM) {
+          } else if (anchor.y === "bottom") {
             data.anchor[1] = data.image.height;
-          } else if (anchor.y === Kepler.CENTER) {
+          } else if (anchor.y === "center") {
             data.anchor[1] = data.image.height / 2;
           } else {
             throw new Error(
               `Invalid vertical anchor for sprite ` +
-                `"${spriteName}" (Expected Kepler.TOP, Kepler.CENTER, ` +
-                `Kepler.BOTTOM, or a number, recieved "${anchor.y}")`
+                `"${spriteName}" (Expected "top", "center", ` +
+                `"bottom", or a number, recieved "${anchor.y}")`
             );
           }
 
           data.scale = [scale.x, scale.y];
-          data.size = [];
           if (size.width != null) {
             data.scale[0] = size.width / data.image.width;
           }
@@ -365,12 +350,15 @@
       img,
       {
         position = { x: 0, y: 0 },
-        anchor = { x: Kepler.CENTER, y: Kepler.CENTER },
+        anchor = { x: "center", y: "center" },
         frameRate = 20,
-        playbackMode = Kepler.LOOP,
+        playbackMode = "loop",
         playbackSpeed = 1,
         paused = false,
         startTag = null,
+        rotation = 0,
+        scale = { x: 1, y: 1 },
+        size = { width: null, height: null },
       }
     ) {
       let data = {
@@ -380,16 +368,18 @@
         frameRate: frameRate,
         playbackSpeed: playbackSpeed,
         paused: paused,
+        rotation: rotation,
+        scale: [scale.x, scale.y]
       };
 
       if (
-        playbackMode !== Kepler.PLAY_ONCE &&
-        playbackMode !== Kepler.PING_PONG &&
-        playbackMode !== Kepler.LOOP
+        playbackMode !== "play once" &&
+        playbackMode !== "ping pong" &&
+        playbackMode !== "loop"
       ) {
         throw new Error(
           `Invalid playback mode for sprite "${spriteName}" (expected ` +
-            `Kepler.PLAY_ONCE, Kepler.PING_PONG, or Kepler.LOOP, recieved ` +
+            `"play once", "ping pong", or "loop", recieved ` +
             `"${playbackMode}")`
         );
       }
@@ -407,36 +397,43 @@
       let sourceWidth = frames[Object.keys(frames)[0]].sourceSize.w;
       let sourceHeight = frames[Object.keys(frames)[0]].sourceSize.h;
 
+      if (size.width != null) {
+        data.scale[0] = size.width / sourceWidth;
+      }
+      if (size.height != null) {
+        data.scale[1] = size.height / sourceHeight;
+      }
+
       // calculate display anchor
       data.anchor = [];
       if (typeof anchor.x === "number") {
         data.anchor[0] = anchor.x;
-      } else if (anchor.x === Kepler.LEFT) {
+      } else if (anchor.x === "left") {
         data.anchor[0] = 0;
-      } else if (anchor.x === Kepler.RIGHT) {
+      } else if (anchor.x === "right") {
         data.anchor[0] = sourceWidth;
-      } else if (anchor.x === Kepler.CENTER) {
+      } else if (anchor.x === "center") {
         data.anchor[0] = sourceWidth / 2;
       } else {
         throw new Error(
           `Invalid horizontal anchor for sprite "${spriteName}" (Expected ` +
-            `Kepler.LEFT, Kepler.CENTER, Kepler.RIGHT, or a number, recieved ` +
+            `"left", "center", "right", or a number, recieved ` +
             `"${anchor.x}")`
         );
       }
 
       if (typeof anchor.y === "number") {
         data.anchor[1] = anchor.y;
-      } else if (anchor.y === Kepler.TOP) {
+      } else if (anchor.y === "top") {
         data.anchor[1] = 0;
-      } else if (anchor.y === Kepler.BOTTOM) {
+      } else if (anchor.y === "bottom") {
         data.anchor[1] = sourceHeight;
-      } else if (anchor.y === Kepler.CENTER) {
+      } else if (anchor.y === "center") {
         data.anchor[1] = sourceHeight / 2;
       } else {
         throw new Error(
           `Invalid vertical anchor for sprite "${spriteName}" (Expected ` +
-            `Kepler.TOP, Kepler.CENTER, Kepler.BOTTOM, or a number, ` +
+            `"top", "center", "bottom", or a number, ` +
             `recieved "${anchor.y}")`
         );
       }
@@ -468,7 +465,7 @@
       }
 
       // tags are used to separate animations
-      if (meta.frameTags.length === 0) {
+      if (!meta.hasOwnProperty("frameTags") || meta.frameTags.length === 0) {
         data.tags = {
           main: { start: 0, end: data.frames.length - 1 },
         };
@@ -726,7 +723,7 @@
      */
     #frameTimer;
 
-    /** @type {Kepler.PLAY_ONCE|Kepler.PING_PONG|Kepler.LOOP} */
+    /** @type {"play once"|"ping pong"|"loop"} */
     playbackMode;
 
     /** @type {number} */
@@ -878,7 +875,7 @@
      */
     advanceFrame(n) {
       this.#frameIndex += n;
-      if (this.playbackMode === Kepler.LOOP) {
+      if (this.playbackMode === "loop") {
         // overly complicated math to make the frame index always positive,
         // because apparently no one knows how modular arithmetic actually works
         this.#frameIndex =
@@ -886,7 +883,7 @@
             this.numFrames) %
             this.numFrames) +
           this.#startIndex;
-      } else if (this.playbackMode === Kepler.PING_PONG) {
+      } else if (this.playbackMode === "ping pong") {
         if (this.#frameIndex < this.#startIndex) {
           this.#frameIndex = this.#startIndex;
           this.playbackSpeed *= -1;
