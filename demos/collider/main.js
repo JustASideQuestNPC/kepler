@@ -151,7 +151,7 @@ function draw() {
   if (currentDynamicCollider.isColliding(staticCircle, transVec)) {
     stroke(RED);
     colliding = true;
-    hasMTV = true;
+    hasMTV = (dcIndex === 2 || dcIndex === 3);
     name = "CircleCollider";
   } else {
     stroke(GREEN);
@@ -161,7 +161,7 @@ function draw() {
   if (currentDynamicCollider.isColliding(staticPolygon, transVec)) {
     stroke(RED);
     colliding = true;
-    hasMTV = true;
+    hasMTV = (dcIndex === 2 || dcIndex === 3);
     name = "PolygonCollider";
   } else {
     stroke(GREEN);

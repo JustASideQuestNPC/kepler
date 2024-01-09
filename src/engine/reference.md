@@ -483,6 +483,7 @@ any entities you add to an engine *must* be from classes that extend it.
 
 ## Methods
 - [Constructor](#constructor-1)
+- [`setup()` (virtual)]()
 - [`update()` (virtual)](#update-1)
 - [`render()` (virtual)](#render-1)
 - [`hasTag()`](#hastag)
@@ -504,6 +505,31 @@ class ExampleEntity extends Kepler.Entity {
   constructor(x, y) {
     super(); // does nothing but is still required
     this.position = createVector(x, y);
+  }
+}
+```
+
+### setup()
+#### Description
+Run once when the entity is added to an engine. This is a virtual method, so it
+can be ignored if the entity will never need to update (the base `setup()` does
+nothing).
+
+Unlike the entity's constructor, `setup()` runs after the entity has been given
+a reference to the engine holding it, so it can be used to set things like the
+camera position.
+#### Examples
+```js
+class ExampleEntity extends Kepler.Entity {
+  position;
+
+  constructor(x, y) {
+    super(); // does nothing but is still required
+    this.position = createVector(x, y);
+  }
+
+  setup(dt) {
+    this.engine.cameraPos = this.position;
   }
 }
 ```

@@ -32,11 +32,11 @@ of the sketch's main input listeners (`keyPressed()`, `keyReleased()`,
 defines versions of them that update the created instance. `Kepler.Input`
 objects can only be created using `makeNew()`, *not* `new Kepler.Input()`.
 
-Like most constructors in Kepler, `makeNew()` takes a configuration object,
-which can have up to two properties. The first, `sketch`, is the sketch or
-window to define input listeners for. The second, `f12HotkeyEnabled`, is whether
-the created input listeners should override the browser's default behavior when
-the F12 key is pressed. In most browsers, F12 opens the debug console.
+The first parameter in `makeNew`, `sketch`, is the sketch or window to define
+input listeners for. The second, `f12HotkeyEnabled`, is an optional boolean that
+determines whether the created input listeners should override the browser's
+default behavior when the F12 key is pressed. In most browsers, F12 opens the
+debug console. The default value is for `f12HotkeyEnabled` is `true`.
 
 The automatically defined input listeners should be enough for most
 applications. If you decide to define them yourself, you'll need to call
@@ -50,9 +50,7 @@ let input;
 
 // global mode
 function setup() {
-  input = Kepler.Input.makeNew({
-    sketch: window
-  });
+  input = Kepler.Input.makeNew(window);
 }
 ```
 
@@ -63,10 +61,7 @@ const s = (sketch) => {
   
   sketch.setup = () => {
     // disable the F12 hotkey
-    input = Kepler.Input.makeNew({
-      sketch: sketch,
-      f12HotkeyEnabled: false
-    });
+    input = Kepler.Input.makeNew(window, false);
   };
 }
 
@@ -74,7 +69,7 @@ let sp = new p5(s);
 ```
 
 #### Syntax
-`KInput.makeNew({sketch, [f12HotkeyEnabled]})`
+`KInput.makeNew(sketch, [f12HotkeyEnabled])`
 
 #### Parameters
 - `sketch`: (`p5` | `Window`) The sketch (or window if in global mode) that
@@ -128,7 +123,7 @@ let input;
 let counter = 0;
 
 function setup() {
-  input = Kepler.Input.makeNew({ sketch: window });
+  input = Kepler.Input.makeNew(window);
   input.addAction({
     name: "a basic action",
     keys: ["spacebar"]
@@ -180,7 +175,7 @@ technical reasons, actions with a callback function cannot be stored in a file.
 let input;
 
 function preload() {
-  input = Kepler.Input.makeNew({ sketch: window });
+  input = Kepler.Input.makeNew(window);
   input.loadActionList("action-list.json");
 }
 ```
@@ -211,7 +206,7 @@ Updates the manager and all actions inside it. This needs to be called once in
 let input;
 
 function setup() {
-  input = Kepler.Input.makeNew({ sketch: window });
+  input = Kepler.Input.makeNew(window);
 }
 
 function draw() {
