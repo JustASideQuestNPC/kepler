@@ -208,7 +208,7 @@
      * @returns {Kepler.Input} The Input object created and referenced in the 
      *    input listeners.
      */
-    static makeNew({sketch, f12HotkeyEnabled = true} = {}) {
+    static makeNew(sketch, f12HotkeyEnabled = true) {
       if (sketch == null) {
         throw new Error(
             "Kepler.Input.makeNew() requires a sketch! (if you're running " +
@@ -313,7 +313,7 @@
       }
       if (keys == null) {
         throw new TypeError(
-          `The input action "${name}" has no keys or mouse buttons assigned `
+          `The input action "${name}" has no keys or mouse buttons assigned ` +
             `to it!`
         );
       }
@@ -322,7 +322,7 @@
       if (keys.constructor !== Array) {
         throw new TypeError(
           `The input action "${name}" requires an array of keys (even if ` +
-            `only oa single key is bound to it)!`
+            `only a single key is bound to it)!`
         );
       }
       if (keys.length === 0) {
@@ -449,7 +449,7 @@
       if (verboseLogging) {
         console.log(
           "%cKepler.Input: " + `%cLoading actions from ${path}`,
-            "color:#30D6FF", "color:default"
+            "color: #30D6FF", "color:default"
         );
         startTime = window.performance.now();
       }
@@ -512,10 +512,10 @@
      * @returns {boolean}
      */
     isActive(name) {
-      if (!Object.hasOwn(this.#inputActions, name)) {
-        throw new Error(`The input action "${name}" does not exist!`);
+      if (Object.hasOwn(this.#inputActions, name)) {
+        return this.#inputActions[name].active;
       }
-      return this.#inputActions[name].active;
+      throw new Error(`The input action "${name}" does not exist!`);
     }
 
     /**

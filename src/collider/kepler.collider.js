@@ -402,7 +402,7 @@
     }
 
     /** @type {p5.Vector} */
-    #position = createVector(0, 0);
+    #position;
 
     /** @type {p5.Vector} */
     get position() {
@@ -444,6 +444,7 @@
      */
     constructor({ points, x = 0, y = 0, sketch }) {
       this.#sketch = sketch;
+      this.#position = this.#sketch.createVector();
       if (points.length < 3) {
         throw new Error("Polygon colliders must have at least 3 points!");
       }

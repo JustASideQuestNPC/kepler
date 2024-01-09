@@ -64,7 +64,7 @@
       if (!this.#spriteData.hasOwnProperty(name)) {
         throw new Error(
           `The sprite "${name}" does not exist! (If it should, ` +
-            `make sure you've loaded it with KSprite.preload() before ` +
+            `make sure you've loaded it with SpriteLoader.preload() before ` +
             `calling this method)`
         );
       }
@@ -96,7 +96,7 @@
       if (!this.#spriteData.hasOwnProperty(name)) {
         throw new Error(
           `The sprite "${name}" does not exist! (If it should, ` +
-            `make sure you've loaded it with KSprite.preload() before ` +
+            `make sure you've loaded it with SpriteLoader.preload() before ` +
             `calling this method)`
         );
       }
@@ -140,7 +140,7 @@
         // remove the file extension using the arcane runes (read: regex)
         spriteName = spriteName.replace(/\.[^/.]+$/, "");
 
-        extension = entry.slice(((file.lastIndexOf(".") - 1) >>> 0) + 2);
+        extension = file.slice(((file.lastIndexOf(".") - 1) >>> 0) + 2);
       } else {
         args = file;
         if (file.hasOwnProperty("name")) {
@@ -189,7 +189,7 @@
       if (verboseLogging) {
         console.log(
           "%cKepler.SpriteLoader: " + `%cLoading sprites from ${path}`,
-            "color: #d45eff", "color: default"
+            "color: #30D6FF", "color: default"
         );
         startTime = window.performance.now();
       }
@@ -209,7 +209,7 @@
             if (verboseLogging) {
               console.log(
                 "%cKepler.SpriteLoader: " + `%cLoaded sprite "${name}"`,
-                  "color: #d45eff", "color: default"
+                  "color: #30D6FF", "color: default"
               );
             }
           }
@@ -219,7 +219,7 @@
             console.log(
               "%cKepler.SpriteLoader: " + `%cLoaded ` +
                 `${Object.values(json).length} sprite(s) in ${duration} ms`,
-                "color: #d45eff", "color: #23D18B"
+                "color: #30D6FF", "color: #23D18B"
             );
           }
         },
