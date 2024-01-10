@@ -84,7 +84,8 @@ takes a configuration object, which can have up to eight properties. The only
 required property, `sketch`, is the sketch or window that the engine is being
 created in. The remaining properties are optional and can be used to set the
 engine's `renderTarget`, `tickRate`, `cameraAnchor`, `cameraPos`,
-`useCameraBoundary`, `worldWidth`, and `worldHeight` properties.
+`cameraTightness`, `useCameraBoundary`, `worldWidth`, and `worldHeight`
+properties.
 
 Note that to keep the parameter list a bit cleaner, the `cameraAnchor` and 
 `cameraPos` are passed as objects with x and y properties, *not* as Vectors.
@@ -103,6 +104,7 @@ function setup() {
     tickRate: 60,
     cameraAnchor: { x: 0, y: 0 },
     cameraPos: { x: 200, y: 100 },
+    cameraTightness: 0.5,
     useCameraBoundary: true,
     worldWidth: 1200,
     worldHeight: 800
@@ -121,6 +123,7 @@ function setup() {
 - `tickRate`: optional `number`
 - `cameraAnchor`: optional `object`
 - `cameraPos`: optional `object`
+- `cameraTightness`: optional `number`
 - `useCameraBoundary`: optional `boolean`
 - `worldWidth`: optional `number`
 - `worldHeight`: optional `number`

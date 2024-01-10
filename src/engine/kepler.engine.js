@@ -213,8 +213,8 @@
       return this.#cameraPos;
     }
     set cameraPos(pos) {
-      this.#cameraPos = pos;
-      this.cameraTarget = pos;
+      this.#cameraPos = pos.copy();
+      this.cameraTarget = pos.copy();
     }
 
     /**
@@ -369,6 +369,7 @@
       cameraAnchor = null,
       cameraPos = null,
       useCameraBoundary = false,
+      cameraTightness = 1,
       worldWidth = null,
       worldHeight = null,
     } = {}) {
@@ -383,6 +384,7 @@
       this.#cameraPos = this.#sketch.createVector();
       this.cameraTarget = this.#sketch.createVector();
       this.#cameraOffset = this.#sketch.createVector();
+      this.cameraTightness = cameraTightness;
       this.renderTarget = renderTarget || sketch;
       this.tickRate = tickRate || sketch.getTargetFrameRate();
       if (cameraAnchor != null) {
@@ -405,8 +407,8 @@
         this.cameraPos = this.cameraAnchor.copy();
       }
       this.useCameraBoundary = useCameraBoundary;
-      this.#worldWidth = worldWidth || this.#worldWidth;
-      this.#worldHeight = worldHeight || this.#worldHeight;
+      this.worldWidth = worldWidth || this.#worldWidth;
+      this.worldHeight = worldHeight || this.#worldHeight;
     }
 
     /**
