@@ -23,10 +23,10 @@ let colliderNames = [
   "PolygonCollider",
 ];
 
-function preload() {
-  loadJSON("../../extras/color-palette.json", loadPalette);
-}
-
+const BLACK = "#1a1c2c";
+const RED   = "#b13e53";
+const GREEN = "#38b764";
+const BLUE  = "#3b5dc9";
 
 function setup() {
   createCanvas(800, 800);
@@ -121,7 +121,7 @@ function draw() {
   }
   staticPolygon.modAngle(0.01);
 
-  background(WHITE);
+  background(255);
 
   noFill();
   strokeWeight(5);
@@ -151,7 +151,7 @@ function draw() {
   if (currentDynamicCollider.isColliding(staticCircle, transVec)) {
     stroke(RED);
     colliding = true;
-    hasMTV = true;
+    hasMTV = (dcIndex === 2 || dcIndex === 3);
     name = "CircleCollider";
   } else {
     stroke(GREEN);
@@ -161,7 +161,7 @@ function draw() {
   if (currentDynamicCollider.isColliding(staticPolygon, transVec)) {
     stroke(RED);
     colliding = true;
-    hasMTV = true;
+    hasMTV = (dcIndex === 2 || dcIndex === 3);
     name = "PolygonCollider";
   } else {
     stroke(GREEN);

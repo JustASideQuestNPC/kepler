@@ -84,7 +84,8 @@ takes a configuration object, which can have up to eight properties. The only
 required property, `sketch`, is the sketch or window that the engine is being
 created in. The remaining properties are optional and can be used to set the
 engine's `renderTarget`, `tickRate`, `cameraAnchor`, `cameraPos`,
-`useCameraBoundary`, `worldWidth`, and `worldHeight` properties.
+`cameraTightness`, `useCameraBoundary`, `worldWidth`, and `worldHeight`
+properties.
 
 Note that to keep the parameter list a bit cleaner, the `cameraAnchor` and 
 `cameraPos` are passed as objects with x and y properties, *not* as Vectors.
@@ -103,6 +104,7 @@ function setup() {
     tickRate: 60,
     cameraAnchor: { x: 0, y: 0 },
     cameraPos: { x: 200, y: 100 },
+    cameraTightness: 0.5,
     useCameraBoundary: true,
     worldWidth: 1200,
     worldHeight: 800
@@ -121,6 +123,7 @@ function setup() {
 - `tickRate`: optional `number`
 - `cameraAnchor`: optional `object`
 - `cameraPos`: optional `object`
+- `cameraTightness`: optional `number`
 - `useCameraBoundary`: optional `boolean`
 - `worldWidth`: optional `number`
 - `worldHeight`: optional `number`
@@ -483,6 +486,7 @@ any entities you add to an engine *must* be from classes that extend it.
 
 ## Methods
 - [Constructor](#constructor-1)
+- [`setup()` (virtual)]()
 - [`update()` (virtual)](#update-1)
 - [`render()` (virtual)](#render-1)
 - [`hasTag()`](#hastag)
@@ -504,6 +508,31 @@ class ExampleEntity extends Kepler.Entity {
   constructor(x, y) {
     super(); // does nothing but is still required
     this.position = createVector(x, y);
+  }
+}
+```
+
+### setup()
+#### Description
+Run once when the entity is added to an engine. This is a virtual method, so it
+can be ignored if the entity will never need to update (the base `setup()` does
+nothing).
+
+Unlike the entity's constructor, `setup()` runs after the entity has been given
+a reference to the engine holding it, so it can be used to set things like the
+camera position.
+#### Examples
+```js
+class ExampleEntity extends Kepler.Entity {
+  position;
+
+  constructor(x, y) {
+    super(); // does nothing but is still required
+    this.position = createVector(x, y);
+  }
+
+  setup(dt) {
+    this.engine.cameraPos = this.position;
   }
 }
 ```

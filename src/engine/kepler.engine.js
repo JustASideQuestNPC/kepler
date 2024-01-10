@@ -1,3 +1,15 @@
+/*
+ *   _                 _                                 _              
+ *  | | __ ___  _ __  | |  ___  _ __  ___  _ __    __ _ (_) _ __    ___ 
+ *  | |/ // _ \| '_ \ | | / _ \| '__|/ _ \| '_ \  / _` || || '_ \  / _ \
+ *  |   <|  __/| |_) || ||  __/| | _|  __/| | | || (_| || || | | ||  __/
+ *  |_|\_\\___|| .__/ |_| \___||_|(_)\___||_| |_| \__, ||_||_| |_| \___|
+ *             |_|                                |___/                 
+ * 
+ *  Part of Kepler, a 2d game engine for p5.js
+ *  https://github.com/JustASideQuestNPC/kepler
+ */
+
 // add engine stuff to the Kepler namespace using a "self-executing anonymous
 // function" and associated black magic
 (function (Kepler) {
@@ -106,8 +118,9 @@
         throw new Error("Tick rate cannot be <= 0!");
       } else if (rate < 60) {
         console.warn(
-          `Tick rate of ${rate} tps is low and may cause a choppy ` +
-            `simulation (recommended tick rate is at least 50-60).`
+          `%cKepler.Engine: ` + `%cTick rate of ${rate} tps is low and may ` +
+            `cause a choppy simulation (recommended tick rate is at least ` +
+            `50-60).`, "color: #30D6FF", "color: default"
         );
       }
       this.#tickRate = rate;
@@ -145,7 +158,7 @@
       this.#screenWidth = rt.width;
       this.#screenHeight = rt.height;
       // changing the render target resets camera settings
-      this.cameraAnchor = createVector(
+      this.cameraAnchor = this.#sketch.createVector(
         this.#screenWidth / 2,
         this.#screenHeight / 2
       );
@@ -200,8 +213,8 @@
       return this.#cameraPos;
     }
     set cameraPos(pos) {
-      this.#cameraPos = pos;
-      this.cameraTarget = pos;
+      this.#cameraPos = pos.copy();
+      this.cameraTarget = pos.copy();
     }
 
     /**
@@ -209,13 +222,13 @@
      * @private
      * @type {p5.Vector}
      */
-    #cameraPos = createVector();
+    #cameraPos;
 
     /**
      * The position the camera is attempting to reach.
      * @type {p5.Vector}
      */
-    cameraTarget = createVector();
+    cameraTarget;
 
     /**
      * A vector that determines what point on the screen the camera position
@@ -226,7 +239,10 @@
      * center of the screen.
      */
     get cameraAnchor() {
-      return createVector(-this.#cameraOffset.x, -this.#cameraOffset.y);
+      return this.#sketch.createVector(
+        -this.#cameraOffset.x,
+        -this.#cameraOffset.y
+      );
     }
     set cameraAnchor(anchor) {
       this.#cameraOffset.x = -anchor.x;
@@ -239,7 +255,7 @@
      * @private
      * @type {p5.Vector}
      */
-    #cameraOffset = createVector();
+    #cameraOffset;
 
     /**
      * Determines how closely the camera position follows the target. A
@@ -353,6 +369,7 @@
       cameraAnchor = null,
       cameraPos = null,
       useCameraBoundary = false,
+      cameraTightness = 1,
       worldWidth = null,
       worldHeight = null,
     } = {}) {
@@ -364,7 +381,11 @@
       }
 
       this.#sketch = sketch;
-      this.#renderTarget = renderTarget || sketch;
+      this.#cameraPos = this.#sketch.createVector();
+      this.cameraTarget = this.#sketch.createVector();
+      this.#cameraOffset = this.#sketch.createVector();
+      this.cameraTightness = cameraTightness;
+      this.renderTarget = renderTarget || sketch;
       this.tickRate = tickRate || sketch.getTargetFrameRate();
       if (cameraAnchor != null) {
         this.cameraAnchor = this.#sketch.createVector(
@@ -386,8 +407,8 @@
         this.cameraPos = this.cameraAnchor.copy();
       }
       this.useCameraBoundary = useCameraBoundary;
-      this.#worldWidth = worldWidth || this.#worldWidth;
-      this.#worldHeight = worldHeight || this.#worldHeight;
+      this.worldWidth = worldWidth || this.#worldWidth;
+      this.worldHeight = worldHeight || this.#worldHeight;
     }
 
     /**
@@ -402,6 +423,7 @@
     addEntity(entity) {
       // all entities have a reference to the engine holding them
       entity.engine = this;
+      entity.setup();
       this.#entities.push(entity);
       return entity;
     }
@@ -635,6 +657,13 @@
      *    only plan on drawing directly to the main sketch, you can ignore this.
      */
     render(rt) {}
+
+    /**
+     * Runs when the entity is added to the engine, *after* it is given a
+     * reference to the engine. Only does something if you override it.
+     * @method
+     */
+    setup() {}
 
     /**
      * Returns whether the entity has the specified tag.
