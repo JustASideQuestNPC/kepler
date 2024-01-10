@@ -30,7 +30,7 @@ const BLUE  = "#3b5dc9";
 
 function setup() {
   createCanvas(800, 800);
-  input = Kepler.Input.makeNew({ sketch: window });
+  input = Kepler.Input.makeNew(window);
   input.addAction({
     name: "cycle colliders",
     keys: ["left mouse"],

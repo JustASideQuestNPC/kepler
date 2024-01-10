@@ -13,7 +13,7 @@ const RED   = "#b13e53";
 const GREEN = "#38b764";
 
 function preload() {
-  input = Kepler.Input.makeNew({ sketch: window });
+  input = Kepler.Input.makeNew(window);
   input.loadActionList("action-list.json");
 }
 

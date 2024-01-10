@@ -138,6 +138,11 @@ meaning it may not finish before the next line of your sketch is executed. To
 prevent this from causing problems, create the sprite loader and load any
 sprites in `preload()`.
 
+An optional second parameter, `verboseLogging`, is a boolean that enables or
+disables logging, which prints some status updates to the console while loading
+each sprite. Logging is enabled by default. Note that for performance reasons,
+logging is disabled in the minified files for kepler.sprite.
+
 An example of how to format the .json file can be found below.
 
 #### Examples
@@ -162,10 +167,11 @@ function preload() {
 ```
 
 #### Syntax
-`loadSpriteList(path)`
+`loadSpriteList(path, [verboseLogging])`
 
 #### Parameters
 - `path`: (`string`) The path to the .json file.
+- `verboseLogging`: (optional `boolean`) Enables or disables logging.
 
 ### makeImageSprite()
 #### Description

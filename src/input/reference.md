@@ -1,6 +1,6 @@
 # kepler.input Reference
-***Note:** This is a language reference, not a tutorial. For a tutorial, see the
-readme.*
+***Note:** This is a language reference, not a tutorial. For a tutorial, see
+the quickstart guide.*
 
 # Contents:
 - [**Kepler.Input:**](#keplerinput) Main class that manages the input system.
@@ -167,6 +167,11 @@ meaning it may not finish before the next line in your sketch is executed. To
 prevent this from causing problems, call [`makeNew()`](#makenew) and
 `loadActionList()` in `preload()`, instead of in `setup()`.
 
+An optional second parameter, `verboseLogging`, is a boolean that enables or
+disables logging, which prints some status updates to the console while loading
+each action. Logging is enabled by default. Note that for performance reasons,
+logging is disabled in the minified files for kepler.input.
+
 An example of how to format the .json file can be found below. Note that for
 technical reasons, actions with a callback function cannot be stored in a file.
 
@@ -191,10 +196,11 @@ function preload() {
 ```
 
 #### Syntax
-`loadActionList(path)`
+`loadActionList(path, [verboseLogging])`
 
 #### Parameters
 - `path`: (`string`) The path to the .json file.
+- `verboseLogging`: (optional `boolean`) Enables or disables logging.
 
 ### update()
 #### Description
