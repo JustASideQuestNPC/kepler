@@ -211,3 +211,51 @@ input.addAction({
   }
 });
 ```
+Each time you press Enter, you should now see a counter print out in the debug
+console (if you're not using the web editor, you can open the console by
+pressing F12, or by right clicking and selecting "inspect").
+
+In addition to `addAction()`, you can also load actions by placing them in a
+.json file, then loading that file by using the `loadActionList()` method. The
+file is formatted mostly the same as the objects used in `addAction()`, but the
+name of the action is used as a key in the file, instead of a property:
+```json
+{
+  "json-formatted action": {
+    "keys": ["shift", "spacebar", "left mouse"],
+    "chord": true,
+    "mode": "press"
+  }
+}
+```
+Note that the keys for each property must be in quotation marks. Additonally,
+actions with callback functions *cannot* be stored in a .json file for technical
+reasons.
+
+If you add all the actions from the examples above (minus the one with a
+callback) to a file called `action-list.json`, you can then remove all of the
+`addAction()` calls to add them, and just call `loadActionList()` once. Note
+that because of how p5.js loads files, both `makeNew()` and `loadActionList()`
+must be called in `preload()`, not `setup()`:
+```js
+let input;
+function preload() {
+  input = Kepler.Input.makeNew(window);
+  // this assumes that action-list.json is in the same folder as this file
+  input.loadActionList("action-list.json");
+}
+
+function setup() {
+  // this action could be added in either setup() or preload()
+  let i = 0;
+  input.addAction({
+    name: "callback counter",
+    keys: ["enter"], // single keys still require an array
+    mode: "press",
+    callback: () => {
+      ++i; // add 1 to i
+      console.log(`Pressed enter ${i} time(s)`);
+    }
+  });
+}
+```
