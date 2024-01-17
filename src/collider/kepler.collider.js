@@ -477,14 +477,14 @@
 
       for (let i = 0; i < this.#rotatedPoints.length; ++i) {
         this.#points[i].set(
-          this.#rotatedPoints[i].x + x,
-          this.#rotatedPoints[i].y + y
+          this.#rotatedPoints[i].x + this.#position.x,
+          this.#rotatedPoints[i].y + this.#position.y
         );
       }
 
       // also move the bounding box
-      this.#bbox.x = this.#rotatedBBox.x + x;
-      this.#bbox.y = this.#rotatedBBox.y + y;
+      this.#bbox.x = this.#rotatedBBox.x + this.#position.x;
+      this.#bbox.y = this.#rotatedBBox.y + this.#position.y;
     }
 
     /**

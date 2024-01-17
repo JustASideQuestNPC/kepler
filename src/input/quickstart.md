@@ -1,7 +1,7 @@
 # kepler.input Quickstart Guide
-***Note:** This is a tutorial for how to quickly get kepler.input up and running. If
-you're looking for a list of all the functionality in this module, see the
-language reference.*
+***Note:** This is a tutorial for how to quickly get kepler.input up and
+running. If you're looking for a list of all the functionality in this module,
+see the language reference.*
 
 # Contents
 - [Overview](#overview)
@@ -67,7 +67,9 @@ function setup() {
   input = Kepler.Input.makeNew(window);
 }
 ```
-If you're running in [instance mode](https://github.com/processing/p5.js/wiki/Global-and-instance-mode), it's whatever you're passing to the closure:
+If you're running in
+[instance mode](https://github.com/processing/p5.js/wiki/Global-and-instance-mode),
+it's whatever you're passing to the closure:
 ```js
 const s = (sketch) {
   let input;
