@@ -1,4 +1,11 @@
 # Kepler
+If you're here from CoC, hi! Before you read anything else, go to the
+[team hub](https://github.com/JustASideQuestNPC/team-ace-of-spades-hub), which is the actual reason
+I posted this link.
+
+The code here won't work on Khan Academy and is generally kind of terrible, but there's a ton of
+decent JSDoc all over it.
+
 Kepler is a modular library and engine for making 2D games using
 [p5.js](https://p5js.org/).
 
